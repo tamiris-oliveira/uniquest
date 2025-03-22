@@ -1,0 +1,68 @@
+class GroupsController < ApplicationController
+  before_action :authenticate_request!
+
+  def index
+    render json: Group.all
+  end
+
+  def create
+    group = Group.new(group_params)
+    if group.save
+      render json: group, status: :created
+    else
+      render json: { errors: group.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def show
+    group = find_group
+    return unless group
+
+    render json: group, include: :users
+  end
+
+  def update
+    group = find_group
+    return unless group
+
+    if group.update(group_params)
+      group.users = User.where(id: params[:group][:users_id]) if params.dig(:group, :users_id).present?
+      render json: group, include: :users
+    else
+      render json: { errors: group.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    group = find_group
+    return unless group
+
+    group.users.clear
+    group.destroy!
+    head :no_content
+  rescue ActiveRecord::RecordNotDestroyed
+    render json: { error: "Falha ao excluir o grupo." }, status: :unprocessable_entity
+  end
+
+  def add_user
+    group = find_group
+    user = User.find_by(id: params[:user_id])
+    return render json: { error: "Usuário não encontrado." }, status: :not_found unless user
+
+    group.users << user unless group.users.include?(user)
+    render json: group, include: :users
+  end
+
+  private
+
+  def find_group
+    group = Group.find_by(id: params[:id])
+    return render json: { error: "Grupo não encontrado." }, status: :not_found unless group
+
+    group
+  end
+
+  def group_params
+    params.require(:group).permit(:name, :invite_code, :users_id)
+  end
+end

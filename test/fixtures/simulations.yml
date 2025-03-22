@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  title: MyString
+  description: MyText
+  creation_date: 2025-03-04 18:57:56
+  deadline: 2025-03-04
+  user: one
+  group: one
+
+two:
+  title: MyString
+  description: MyText
+  creation_date: 2025-03-04 18:57:56
+  deadline: 2025-03-04
+  user: two
+  group: two

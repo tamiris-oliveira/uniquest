@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  attempt_date: 2025-03-04 18:56:33
+  simulation: one
+  user: one
+
+two:
+  attempt_date: 2025-03-04 18:56:33
+  simulation: two
+  user: two
