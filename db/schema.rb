@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_03_04_224026) do
+ActiveRecord::Schema[8.0].define(version: 2025_04_02_230204) do
   create_table "alternatives", charset: "utf8mb3", force: :cascade do |t|
     t.text "text"
     t.boolean "correct"
@@ -65,10 +65,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_04_224026) do
   create_table "groups", charset: "utf8mb3", force: :cascade do |t|
     t.string "name"
     t.string "invite_code"
-    t.bigint "users_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["users_id"], name: "index_groups_on_users_id"
   end
 
   create_table "notifications", charset: "utf8mb3", force: :cascade do |t|
@@ -144,7 +142,6 @@ ActiveRecord::Schema[8.0].define(version: 2025_03_04_224026) do
   add_foreign_key "corrections", "users"
   add_foreign_key "group_users", "groups"
   add_foreign_key "group_users", "users"
-  add_foreign_key "groups", "users", column: "users_id"
   add_foreign_key "notifications", "users"
   add_foreign_key "question_simulations", "questions"
   add_foreign_key "question_simulations", "simulations"

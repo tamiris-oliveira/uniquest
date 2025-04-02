@@ -6,14 +6,22 @@ class GroupsController < ApplicationController
   end
 
   def create
-    group = Group.new(group_params)
+    users = User.where(id: params[:group][:users_id])
+  
+    if users.empty?
+      return render json: { error: "Pelo menos um usuário válido é necessário." }, status: :unprocessable_entity
+    end
+  
+    group = Group.new(group_params.except(:users_id)) 
+  
     if group.save
-      render json: group, status: :created
+      group.users = users
+      render json: group, include: :users, status: :created
     else
       render json: { errors: group.errors.full_messages }, status: :unprocessable_entity
     end
   end
-
+  
   def show
     group = find_group
     return unless group
