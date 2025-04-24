@@ -2,18 +2,28 @@ class GroupsController < ApplicationController
   before_action :authenticate_request!
 
   def index
-    render json: Group.all
+    groups = Group.all
+
+    params.each do |key, value|
+      if Group.column_names.include?(key) && value.present?
+        groups = groups.where("#{key} LIKE ?", "%#{value}%")
+      end
+    end
+
+    render json: groups
   end
+
+
 
   def create
     users = User.where(id: params[:group][:users_id])
-  
+
     if users.empty?
       return render json: { error: "Pelo menos um usuário válido é necessário." }, status: :unprocessable_entity
     end
-  
-    group = Group.new(group_params.except(:users_id)) 
-  
+
+    group = Group.new(group_params.except(:users_id))
+
     if group.save
       group.users = users
       render json: group, include: :users, status: :created
@@ -21,7 +31,7 @@ class GroupsController < ApplicationController
       render json: { errors: group.errors.full_messages }, status: :unprocessable_entity
     end
   end
-  
+
   def show
     group = find_group
     return unless group
