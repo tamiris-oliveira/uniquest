@@ -26,8 +26,12 @@ Rails.application.routes.draw do
   end
 
   resources :simulations do
-    get "groups", on: :member
-    post "assign_groups", on: :member
+    member do
+      get :groups
+      get :questions
+      put :assign_groups
+      put :assign_questions
+    end
   end
 
   resources :questions do
