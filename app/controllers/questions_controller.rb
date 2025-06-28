@@ -1,32 +1,29 @@
 class QuestionsController < ApplicationController
   before_action :authenticate_request!
-  before_action :set_simulation
   before_action :set_question, only: [ :show, :update, :destroy ]
 
   def index
-    @questions = @simulation.questions
-    render json: @questions
+    @questions = Question.includes(:alternatives).all
+    render json: @questions.to_json(include: :alternatives)
   end
 
   def create
     @question = Question.new(question_params)
 
     if @question.save
-      @simulation.questions << @question
-
-      render json: @question, status: :created, location: simulation_question_url(@simulation, @question)
+      render json: @question.to_json(include: :alternatives), status: :created, location: question_url(@question)
     else
       render json: @question.errors, status: :unprocessable_entity
     end
   end
 
   def show
-    render json: @question
+    render json: @question.to_json(include: :alternatives)
   end
 
   def update
     if @question.update(question_params)
-      render json: @question
+      render json: @question.to_json(include: :alternatives)
     else
       render json: { errors: @question.errors.full_messages }, status: :unprocessable_entity
     end
@@ -34,20 +31,16 @@ class QuestionsController < ApplicationController
 
   def destroy
     @question.destroy
-    render json: { message: "Question deleted successfully" }, status: :ok
+    render json: { message: "Questão excluída com sucesso" }, status: :ok
   end
 
   private
-
-  def set_simulation
-    @simulation = Simulation.find(params[:simulation_id])
-  end
 
   def set_question
     @question = Question.find(params[:id])
   end
 
   def question_params
-    params.require(:question).permit(:statement, :question_type, :justification, :user_id)
+    params.require(:question).permit(:statement, :question_type, :justification, :user_id, :subject_id, alternatives_attributes: [ :id, :text, :correct, :_destroy ])
   end
 end

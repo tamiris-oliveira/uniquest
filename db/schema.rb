@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_04_02_230204) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_28_004048) do
   create_table "alternatives", charset: "utf8mb3", force: :cascade do |t|
     t.text "text"
     t.boolean "correct"
@@ -51,6 +51,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_230204) do
     t.datetime "updated_at", null: false
     t.index ["answer_id"], name: "index_corrections_on_answer_id"
     t.index ["user_id"], name: "index_corrections_on_user_id"
+  end
+
+  create_table "group_simulations", charset: "utf8mb3", force: :cascade do |t|
+    t.bigint "group_id", null: false
+    t.bigint "simulation_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["group_id"], name: "index_group_simulations_on_group_id"
+    t.index ["simulation_id"], name: "index_group_simulations_on_simulation_id"
   end
 
   create_table "group_users", charset: "utf8mb3", force: :cascade do |t|
@@ -95,6 +104,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_230204) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "subject_id", null: false
+    t.index ["subject_id"], name: "index_questions_on_subject_id"
     t.index ["user_id"], name: "index_questions_on_user_id"
   end
 
@@ -115,13 +126,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_230204) do
     t.string "title"
     t.text "description"
     t.datetime "creation_date"
-    t.date "deadline"
+    t.datetime "deadline", precision: nil
     t.bigint "user_id", null: false
-    t.bigint "group_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["group_id"], name: "index_simulations_on_group_id"
     t.index ["user_id"], name: "index_simulations_on_user_id"
+  end
+
+  create_table "subjects", charset: "utf8mb3", force: :cascade do |t|
+    t.string "name"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "users", charset: "utf8mb3", force: :cascade do |t|
@@ -131,6 +146,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_230204) do
     t.integer "role", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.text "avatar"
   end
 
   add_foreign_key "alternatives", "questions"
@@ -140,6 +156,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_230204) do
   add_foreign_key "attempts", "users"
   add_foreign_key "corrections", "answers"
   add_foreign_key "corrections", "users"
+  add_foreign_key "group_simulations", "groups"
+  add_foreign_key "group_simulations", "simulations"
   add_foreign_key "group_users", "groups"
   add_foreign_key "group_users", "users"
   add_foreign_key "notifications", "users"
@@ -148,6 +166,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_04_02_230204) do
   add_foreign_key "questions", "users"
   add_foreign_key "reports", "simulations"
   add_foreign_key "reports", "users"
-  add_foreign_key "simulations", "groups"
   add_foreign_key "simulations", "users"
 end

@@ -15,19 +15,23 @@ Rails.application.routes.draw do
   get "answers/update"
   get "answers/destroy"
   post "login", to: "authentication#login"
+  get "/profile", to: "users#show"
+  put "/profile", to: "users#update"
+  delete "/profile", to: "users#destroy"
 
-  resources :users, only: [ :create, :show, :update, :destroy, :index ]
+  resources :users, only: [ :index, :create ]
 
   resources :groups do
     post "add_user", on: :member
   end
 
   resources :simulations do
-    resources :questions
+    get "groups", on: :member
+    post "assign_groups", on: :member
   end
 
-  resources :questions, only: [ :show, :update, :destroy ] do
-    resources :alternatives
+  resources :questions do
+    resources :alternatives, only: [ :index, :create ]
   end
 
   resources :alternatives, only: [ :show, :update, :destroy ]
@@ -43,4 +47,6 @@ Rails.application.routes.draw do
   resources :notifications
 
   resources :reports
+
+  resources :subjects
 end
