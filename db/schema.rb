@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_28_004048) do
+ActiveRecord::Schema[8.0].define(version: 2025_06_29_173000) do
   create_table "alternatives", charset: "utf8mb3", force: :cascade do |t|
     t.text "text"
     t.boolean "correct"
@@ -37,6 +37,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_28_004048) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.decimal "final_grade", precision: 10, scale: 2
     t.index ["simulation_id"], name: "index_attempts_on_simulation_id"
     t.index ["user_id"], name: "index_attempts_on_user_id"
   end
@@ -76,6 +77,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_28_004048) do
     t.string "invite_code"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "creator_id"
   end
 
   create_table "notifications", charset: "utf8mb3", force: :cascade do |t|
@@ -130,6 +132,8 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_28_004048) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.integer "time_limit"
+    t.integer "max_attempts", default: 1
     t.index ["user_id"], name: "index_simulations_on_user_id"
   end
 

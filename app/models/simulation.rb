@@ -11,4 +11,6 @@ class Simulation < ApplicationRecord
   has_many :reports, dependent: :destroy
 
   validates :title, :deadline, presence: true
+  validates :time_limit, numericality: { greater_than: 0 }
+  validates :max_attempts, numericality: { greater_than: 0 }
 end

@@ -32,6 +32,10 @@ Rails.application.routes.draw do
       put :assign_groups
       put :assign_questions
     end
+
+    collection do
+      get :with_attempts_answers
+    end
   end
 
   resources :questions do
@@ -41,16 +45,26 @@ Rails.application.routes.draw do
   resources :alternatives, only: [ :show, :update, :destroy ]
 
   resources :attempts do
-    resources :answers, only: [ :index, :create ]
+    resources :answers, only: [:index, :create]
+    post 'submit_answers', on: :member
   end
-
-  resources :answers, only: [ :show, :update, :destroy ] do
-    resources :corrections
+  
+  resources :answers, only: [:show, :update, :destroy] do
+    resources :corrections, only: [:index, :create]
   end
-
+  
+  resources :corrections, only: [:show, :update, :destroy]
+  
   resources :notifications
 
-  resources :reports
+  resources :reports, only: [:index, :show, :update, :destroy] do
+    collection do
+      post :generate
+      get :performance_summary
+      get :performance_by_subject
+      get :group_performance
+    end
+  end
 
   resources :subjects
 end

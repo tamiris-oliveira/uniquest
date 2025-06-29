@@ -30,10 +30,18 @@ class QuestionsController < ApplicationController
   end
 
   def destroy
-    @question.destroy
-    render json: { message: "Questão excluída com sucesso" }, status: :ok
+    ActiveRecord::Base.transaction do
+      @question.question_simulations.delete_all
+  
+      @question.destroy!
+    end
+  
+    render json: { message: "Questão e relações excluídas com sucesso" }, status: :ok
+  rescue ActiveRecord::RecordNotDestroyed, ActiveRecord::RecordInvalid => e
+    render json: { error: e.message }, status: :unprocessable_entity
   end
-
+  
+  
   private
 
   def set_question

@@ -25,6 +25,7 @@ class UsersController < ApplicationController
       render json: { errors: @current_user.errors.full_messages }, status: :unprocessable_entity
     end
   end
+  
 
   def destroy
     @current_user.destroy!
@@ -36,6 +37,6 @@ class UsersController < ApplicationController
   private
 
   def user_params
-    params.require(:user).permit(:name, :email, :password, :role, :avatar)
+    params.require(:user).permit(:name, :email, :password, :password_confirmation, :role, :avatar)
   end
 end

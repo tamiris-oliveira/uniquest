@@ -34,10 +34,11 @@ class GroupsController < ApplicationController
 
   def show
     group = find_group
-    return unless group
-
+    return unless group   # para evitar continuar se for nil
+  
     render json: group, include: :users
   end
+  
 
   def update
     group = find_group
@@ -75,12 +76,16 @@ class GroupsController < ApplicationController
 
   def find_group
     group = Group.find_by(id: params[:id])
-    return render json: { error: "Grupo não encontrado." }, status: :not_found unless group
-
+    unless group
+      render json: { error: "Grupo não encontrado." }, status: :not_found
+      return nil
+    end
+  
     group
   end
+  
 
   def group_params
-    params.require(:group).permit(:name, :invite_code, :users_id)
+    params.require(:group).permit(:name, :invite_code, :creator_id, :users_id)
   end
 end

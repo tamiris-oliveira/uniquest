@@ -4,5 +4,5 @@ class Answer < ApplicationRecord
   has_many :corrections, dependent: :destroy
 
   validates :student_answer, presence: true
-  validates :correct, inclusion: { in: [ true, false ] }
+  validates :correct, inclusion: { in: [true, false] }, allow_nil: true
 end
