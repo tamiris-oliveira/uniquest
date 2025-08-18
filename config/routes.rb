@@ -57,12 +57,18 @@ Rails.application.routes.draw do
   
   resources :notifications
 
-  resources :reports, only: [:index, :show, :update, :destroy] do
+  resources :reports, only: [] do
     collection do
-      post :generate
-      get :performance_summary
-      get :performance_by_subject
-      get :group_performance
+      scope '/student' do
+        get :performance_evolution
+        get :subject_performance
+      end
+
+      scope '/teacher' do
+        get 'group_summary/:group_id', to: 'reports#group_summary'
+        get 'simulation_details/:simulation_id', to: 'reports#simulation_details'
+        get :groups_comparison
+      end
     end
   end
 

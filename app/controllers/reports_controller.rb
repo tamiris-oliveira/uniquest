@@ -1,51 +1,195 @@
 class ReportsController < ApplicationController
   before_action :authenticate_request!
+  before_action :authorize_teacher!, only: [:group_summary, :simulation_details, :groups_comparison]
 
-  # GET /reports?start_date=YYYY-MM-DD&end_date=YYYY-MM-DD
-  def index
+  # --- ENDPOINTS PARA ALUNOS ---
+
+  # GET /reports/student/performance_evolution
+  def performance_evolution
     start_date, end_date = parse_period(params)
-    return render json: { error: "Parâmetros start_date e end_date são obrigatórios." }, status: :bad_request unless start_date && end_date
+    return render_bad_request unless start_date && end_date
 
-    render json: performance_summary_data(@current_user.id, start_date, end_date)
+    render json: student_evolution_data(@current_user.id, start_date, end_date)
   end
 
-  def show
-    render json: { error: "Relatório salvo não existe. Use endpoints dinâmicos." }, status: :not_found
-  end
-
-  def performance_summary
+  # GET /reports/student/subject_performance
+  def subject_performance
     start_date, end_date = parse_period(params)
-    return render json: { error: "Parâmetros start_date e end_date são obrigatórios." }, status: :bad_request unless start_date && end_date
+    return render_bad_request unless start_date && end_date
 
-    render json: performance_summary_data(@current_user.id, start_date, end_date)
+    render json: student_subject_data(@current_user.id, start_date, end_date)
   end
 
-  def performance_by_subject
+
+  # --- ENDPOINTS PARA PROFESSORES ---
+
+  # GET /reports/teacher/group_summary/:group_id
+  def group_summary
+    group = Group.find_by(id: params[:group_id])
+    return render_not_found("Grupo") unless group
+
     start_date, end_date = parse_period(params)
-    return render json: { error: "Parâmetros start_date e end_date são obrigatórios." }, status: :bad_request unless start_date && end_date
+    return render_bad_request unless start_date && end_date
 
-    render json: performance_by_subject_data(@current_user.id, start_date, end_date)
+    render json: teacher_group_summary_data(group, start_date, end_date)
   end
 
-  def performance_by_period
-    performance_summary
+  # GET /reports/teacher/simulation_details/:simulation_id
+  def simulation_details
+    simulation = Simulation.find_by(id: params[:simulation_id])
+    return render_not_found("Simulado") unless simulation
+
+    render json: teacher_simulation_data(simulation)
   end
 
-  def group_performance
-    return render json: { error: "Acesso não autorizado." }, status: :forbidden unless @current_user.role == 1
-
-    group_id = params[:group_id]
+  # GET /reports/teacher/groups_comparison
+  def groups_comparison
     start_date, end_date = parse_period(params)
-    return render json: { error: "group_id, start_date e end_date são obrigatórios." }, status: :bad_request unless group_id && start_date && end_date
+    return render_bad_request unless start_date && end_date
 
-    group = Group.find_by(id: group_id)
-    return render json: { error: "Grupo não encontrado." }, status: :not_found unless group
-
-    user_ids = group.users.pluck(:id)
-    render json: group_performance_data(user_ids, group, start_date, end_date)
+    # Considera grupos onde o professor é o criador. Ajuste se a lógica for outra.
+    groups = Group.where(creator_id: @current_user.id)
+    render json: teacher_groups_comparison_data(groups, start_date, end_date)
   end
+
 
   private
+
+  # --- MÉTODOS DE DADOS (DATA METHODS) ---
+
+  def student_evolution_data(user_id, start_date, end_date)
+    attempts = Attempt.where(user_id: user_id)
+                      .where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+                      .order(:created_at)
+
+    # O campo `final_grade` na tabela `attempts` é ideal para performance.
+    # Se ele não for confiavel, a lógica de recálculo da controller original deve ser usada.
+    labels = attempts.map { |a| a.created_at.strftime('%d/%m') }
+    data = attempts.map { |a| a.final_grade || 0 }
+
+    {
+      labels: labels,
+      datasets: [{
+        label: "Nota Final",
+        data: data
+      }]
+    }
+  end
+
+  def student_subject_data(user_id, start_date, end_date)
+    # Calcula a taxa de acerto por matéria para questões objetivas
+    subject_stats = Answer.joins(:question, :attempt)
+      .where(attempts: { user_id: user_id, created_at: start_date.beginning_of_day..end_date.end_of_day })
+      .where(questions: { question_type: 'Objetiva' })
+      .group('questions.subject_id')
+      .pluck(
+        'questions.subject_id',
+        Arel.sql('SUM(CASE WHEN answers.correct = true THEN 1 ELSE 0 END)'), # Contagem de corretas
+        Arel.sql('COUNT(answers.id)') # Contagem total
+      )
+
+    # Mapeia IDs para nomes e calcula o percentual
+    subject_names = Subject.where(id: subject_stats.map(&:first)).pluck(:id, :name).to_h
+    
+    performance_data = subject_stats.map do |subject_id, correct, total|
+      accuracy = total > 0 ? ((correct.to_f / total) * 100).round(1) : 0
+      { name: subject_names[subject_id] || "Indefinido", accuracy: accuracy }
+    end.sort_by { |h| -h[:accuracy] } # Ordena da maior para a menor performance
+
+    {
+      labels: performance_data.map { |d| d[:name] },
+      datasets: [{
+        label: 'Taxa de Acerto (%)',
+        data: performance_data.map { |d| d[:accuracy] }
+      }]
+    }
+  end
+
+  def teacher_group_summary_data(group, start_date, end_date)
+    user_ids = group.users.pluck(:id)
+    attempts = Attempt.where(user_id: user_ids)
+                      .where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+
+    # KPIs
+    average_grade = attempts.average(:final_grade)&.round(2) || 0.0
+
+    # Lógica para o Histograma de Notas
+    bins = [0, 0, 0, 0, 0] # [0-20, 21-40, 41-60, 61-80, 81-100]
+    attempts.pluck(:final_grade).each do |grade|
+      g = grade.to_f
+      if g <= 20; bins[0] += 1
+      elsif g <= 40; bins[1] += 1
+      elsif g <= 60; bins[2] += 1
+      elsif g <= 80; bins[3] += 1
+      else; bins[4] += 1
+      end
+    end
+
+    {
+      group_name: group.name,
+      average_grade: average_grade,
+      total_students: user_ids.size,
+      total_attempts: attempts.size,
+      grade_distribution: {
+        labels: ["0-20", "21-40", "41-60", "61-80", "81-100"],
+        datasets: [{ label: "Nº de Alunos", data: bins }]
+      }
+    }
+  end
+
+  def teacher_simulation_data(simulation)
+    attempts = simulation.attempts.includes(:user)
+
+    # Ranking
+    ranking = attempts.order(final_grade: :desc).map do |attempt|
+      { name: attempt.user.name, grade: attempt.final_grade&.round(2) || 0 }
+    end
+
+    # Questões mais difíceis
+    question_stats = Answer.joins(:question)
+      .where(attempt_id: attempts.pluck(:id), questions: { question_type: 'Objetiva' })
+      .group('questions.id', 'questions.statement')
+      .pluck(
+        'questions.statement',
+        Arel.sql('SUM(CASE WHEN answers.correct = false THEN 1 ELSE 0 END) * 100.0 / COUNT(answers.id)')
+      )
+      .sort_by { |_statement, error_rate| -error_rate }
+      .first(5)
+    
+    {
+      simulation_title: simulation.title,
+      average_grade: attempts.average(:final_grade)&.round(2) || 0,
+      student_ranking: ranking,
+      most_difficult_questions: {
+        labels: question_stats.map(&:first), # statements
+        datasets: [{ label: 'Taxa de Erro (%)', data: question_stats.map(&:last) }] # error_rates
+      }
+    }
+  end
+
+  def teacher_groups_comparison_data(groups, start_date, end_date)
+    comparison_data = groups.map do |group|
+      user_ids = group.users.pluck(:id)
+      avg = Attempt.where(user_id: user_ids)
+                   .where(created_at: start_date.beginning_of_day..end_date.end_of_day)
+                   .average(:final_grade)&.round(2) || 0.0
+      { name: group.name, avg_grade: avg }
+    end
+
+    {
+      labels: comparison_data.map { |d| d[:name] },
+      datasets: [{
+        label: "Nota Média",
+        data: comparison_data.map { |d| d[:avg_grade] }
+      }]
+    }
+  end
+
+  # --- MÉTODOS DE APOIO (HELPERS) ---
+
+  def authorize_teacher!
+    render json: { error: "Acesso não autorizado." }, status: :forbidden unless @current_user.role == 1
+  end
 
   def parse_date(date_str)
     Date.parse(date_str) rescue nil
@@ -54,166 +198,12 @@ class ReportsController < ApplicationController
   def parse_period(params)
     [parse_date(params[:start_date]), parse_date(params[:end_date])]
   end
-
-  # --- MÉTODOS DE DADOS ---
-
-  def performance_summary_data(user_id, start_date, end_date)
-    attempts = Attempt.where(user_id: user_id)
-                      .where(created_at: start_date.beginning_of_day..end_date.end_of_day)
-                      .includes(answers: [:question, :corrections])
-
-    total_correct = 0
-    total_incorrect = 0
-    total_manual = 0.0
-    evolution = []
-
-    attempts.sort_by(&:created_at).each do |attempt|
-      correct = 0
-      incorrect = 0
-      manual = 0.0
-
-      attempt.answers.each do |ans|
-        if ans.question.question_type == "Objetiva"
-          ans.correct ? correct += 1 : incorrect += 1
-        else
-          grade = ans.corrections.last&.grade.to_f
-          manual += grade if grade
-        end
-      end
-
-      total_correct += correct
-      total_incorrect += incorrect
-      total_manual += manual
-
-      evolution << {
-        date: attempt.created_at.to_date,
-        correct: correct,
-        incorrect: incorrect,
-        manual_grade: manual.round(2),
-        total_grade: (correct + manual).round(2)
-      }
-    end
-
-    {
-      total_attempts: attempts.size,
-      total_correct_answers: total_correct,
-      total_incorrect_answers: total_incorrect,
-      total_manual_grade: total_manual.round(2),
-      total_grade: (total_correct + total_manual).round(2),
-      evolution: evolution
-    }
+  
+  def render_bad_request
+    render json: { error: "Parâmetros start_date e end_date são obrigatórios e devem estar no formato YYYY-MM-DD." }, status: :bad_request
   end
 
-  def performance_by_subject_data(user_id, start_date, end_date)
-    answers = Answer.joins(:question, :attempt)
-                    .where(attempts: { user_id: user_id, created_at: start_date.beginning_of_day..end_date.end_of_day })
-                    .includes(:corrections)
-
-    grouped = answers.group_by { |a| a.question.subject&.name || "Indefinido" }
-
-    grouped.map do |subject, answers_list|
-      correct = 0
-      incorrect = 0
-      manual_total = 0.0
-      manual_count = 0
-
-      answers_list.each do |ans|
-        if ans.question.question_type == "Objetiva"
-          ans.correct ? correct += 1 : incorrect += 1
-        else
-          grade = ans.corrections.last&.grade
-          if grade
-            manual_total += grade.to_f
-            manual_count += 1
-          end
-        end
-      end
-
-      {
-        subject_name: subject,
-        correct_answers: correct,
-        incorrect_answers: incorrect,
-        manual_total_grade: manual_total.round(2),
-        manual_average: manual_count > 0 ? (manual_total / manual_count).round(2) : 0.0,
-        total_questions: answers_list.count
-      }
-    end
-  end
-
-  def group_performance_data(user_ids, group, start_date, end_date)
-    attempts = Attempt.where(user_id: user_ids)
-                      .where(created_at: start_date.beginning_of_day..end_date.end_of_day)
-                      .includes(:user, answers: [:question, :corrections])
-
-    user_stats = Hash.new { |h, k| h[k] = { name: "", total: 0.0, attempts: 0 } }
-    question_stats = Hash.new { |h, k| h[k] = { statement: "", correct: 0, incorrect: 0 } }
-
-    total_correct = 0
-    total_incorrect = 0
-    total_manual = 0.0
-
-    attempts.each do |attempt|
-      user = attempt.user
-      correct = 0
-      manual = 0.0
-
-      attempt.answers.each do |ans|
-        q_id = ans.question.id
-        question_stats[q_id][:statement] ||= ans.question.statement
-
-        if ans.question.question_type == "Objetiva"
-          if ans.correct
-            total_correct += 1
-            question_stats[q_id][:correct] += 1
-          else
-            total_incorrect += 1
-            question_stats[q_id][:incorrect] += 1
-          end
-        else
-          grade = ans.corrections.last&.grade
-          if grade
-            total_manual += grade.to_f
-            manual += grade.to_f
-          end
-        end
-      end
-
-      user_stats[user.id][:name] = user.name
-      user_stats[user.id][:total] += (correct + manual)
-      user_stats[user.id][:attempts] += 1
-    end
-
-    ranking = user_stats.map do |user_id, data|
-      {
-        user_id: user_id,
-        name: data[:name],
-        avg_grade: (data[:attempts] > 0 ? data[:total] / data[:attempts] : 0).round(2)
-      }
-    end.sort_by { |u| -u[:avg_grade] }
-
-    most_difficult = question_stats.map do |q_id, data|
-      total = data[:correct] + data[:incorrect]
-      {
-        question_id: q_id,
-        statement: data[:statement],
-        correct: data[:correct],
-        incorrect: data[:incorrect],
-        total: total,
-        error_rate: total > 0 ? (data[:incorrect].to_f / total * 100).round(1) : 0
-      }
-    end.sort_by { |q| -q[:error_rate] }.first(5)
-
-    {
-      group_id: group.id,
-      group_name: group.name,
-      students_count: user_ids.size,
-      total_attempts: attempts.size,
-      total_correct_answers: total_correct,
-      total_incorrect_answers: total_incorrect,
-      total_manual_grade: total_manual.round(2),
-      total_grade: (total_correct + total_manual).round(2),
-      ranking: ranking,
-      most_difficult_questions: most_difficult
-    }
+  def render_not_found(resource_name)
+    render json: { error: "#{resource_name} não encontrado." }, status: :not_found
   end
 end
