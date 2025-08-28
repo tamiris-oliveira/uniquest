@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+student:
+  name: "João Silva"
+  email: "joao@test.com"
+  password_digest: "<%= BCrypt::Password.create('password123') %>"
+  role: 0
+  course: computer_science
+
+teacher:
+  name: "Maria Santos"
+  email: "maria@test.com"
+  password_digest: "<%= BCrypt::Password.create('password123') %>"
+  role: 1
+  course: computer_science
+
+superadmin:
+  name: "Admin User"
+  email: "admin@test.com"
+  password_digest: "<%= BCrypt::Password.create('password123') %>"
+  role: 2
+  course: computer_science
+
+student_two:
+  name: "Ana Costa"
+  email: "ana@test.com"
+  password_digest: "<%= BCrypt::Password.create('password123') %>"
+  role: 0
+  course: engineering

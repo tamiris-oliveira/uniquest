@@ -1,0 +1,15 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+question_one:
+  statement: "Qual é a complexidade do algoritmo de busca binária?"
+  question_type: "Objetiva"
+  justification: "A busca binária tem complexidade O(log n)"
+  user: teacher
+  subject: algorithms
+
+question_two:
+  statement: "Explique o conceito de recursão em programação"
+  question_type: "Discursiva"
+  justification: "Recursão é quando uma função chama a si mesma"
+  user: teacher
+  subject: programming

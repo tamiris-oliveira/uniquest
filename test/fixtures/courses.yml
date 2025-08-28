@@ -1,0 +1,16 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+computer_science:
+  name: "Ciência da Computação"
+  code: "CC"
+  description: "Curso de Ciência da Computação"
+
+engineering:
+  name: "Engenharia de Software"
+  code: "ES"
+  description: "Curso de Engenharia de Software"
+
+mathematics:
+  name: "Matemática"
+  code: "MAT"
+  description: "Curso de Matemática"

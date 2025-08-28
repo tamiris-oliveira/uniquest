@@ -1,14 +1,84 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.
-  # Can be used by load balancers and uptime monitors to verify that the app is live.
+  # Health check route
   get "up" => "rails/health#show", as: :rails_health_check
+  get "attempts/index"
+  get "attempts/show"
+  get "attempts/create"
+  get "attempts/update"
+  get "attempts/destroy"
+  get "corrections/index"
+  get "corrections/create"
+  get "corrections/show"
+  get "corrections/update"
+  get "corrections/destroy"
+  get "answers/index"
+  get "answers/create"
+  get "answers/show"
+  get "answers/update"
+  get "answers/destroy"
+  post "login", to: "authentication#login"
+  get "/profile", to: "users#show"
+  put "/profile", to: "users#update"
+  delete "/profile", to: "users#destroy"
 
-  # Render dynamic PWA files from app/views/pwa/* (remember to link manifest in application.html.erb)
-  # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
-  # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
+  resources :users, only: [ :index, :create ]
 
-  # Defines the root path route ("/")
-  # root "posts#index"
+  resources :groups do
+    post "add_user", on: :member
+  end
+
+  resources :simulations do
+    member do
+      get :groups
+      get :questions
+      put :assign_groups
+      put :assign_questions
+    end
+
+    collection do
+      get :with_attempts_answers
+    end
+  end
+
+  resources :questions do
+    resources :alternatives, only: [ :index, :create ]
+  end
+
+  resources :alternatives, only: [ :show, :update, :destroy ]
+
+  resources :attempts do
+    resources :answers, only: [:index, :create]
+    post 'submit_answers', on: :member
+  end
+  
+  resources :answers, only: [:show, :update, :destroy] do
+    resources :corrections, only: [:index, :create]
+  end
+  
+  resources :corrections, only: [:show, :update, :destroy]
+  
+  resources :notifications
+
+  resources :reports, only: [] do
+    collection do
+      scope '/student' do
+        get :performance_evolution
+        get :subject_performance
+      end
+
+      scope '/teacher' do
+        get 'group_summary/:group_id', to: 'reports#group_summary'
+        get 'simulation_details/:simulation_id', to: 'reports#simulation_details'
+        get :groups_comparison
+      end
+    end
+  end
+
+  resources :subjects
+
+  resources :courses, only: [:index, :show, :create, :update] do
+    resources :users, only: [:index]
+  end
+  
+  resources :users, only: [:index, :show, :create, :update, :destroy]
 end
