@@ -58,8 +58,13 @@ class SimulationsController < ApplicationController
   def create
     simulation = Simulation.new(simulation_params.except(:group_ids, :question_ids))
     if simulation.save
-      simulation.groups = Group.where(id: simulation_params[:group_ids])
-      simulation.questions = Question.where(id: simulation_params[:question_ids])
+      # Associa todos os grupos através da tabela group_simulations
+      if simulation_params[:group_ids].present?
+        simulation.groups = Group.where(id: simulation_params[:group_ids])
+      end
+      if simulation_params[:question_ids].present?
+        simulation.questions = Question.where(id: simulation_params[:question_ids])
+      end
       render_simulation(simulation, status: :created)
     else
       render json: { errors: simulation.errors.full_messages }, status: :unprocessable_entity
@@ -72,10 +77,11 @@ class SimulationsController < ApplicationController
 
   def update
     if @simulation.update(simulation_params.except(:group_ids, :question_ids))
-      if simulation_params[:group_ids]
+      # Associa todos os grupos através da tabela group_simulations
+      if simulation_params[:group_ids].present?
         @simulation.groups = Group.where(id: simulation_params[:group_ids])
       end
-      if simulation_params[:question_ids]
+      if simulation_params[:question_ids].present?
         @simulation.questions = Question.where(id: simulation_params[:question_ids])
       end
       render_simulation(@simulation)

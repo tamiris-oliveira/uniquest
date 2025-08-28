@@ -1,4 +1,6 @@
 Rails.application.routes.draw do
+  # Health check route
+  get "up" => "rails/health#show", as: :rails_health_check
   get "attempts/index"
   get "attempts/show"
   get "attempts/create"
@@ -73,4 +75,10 @@ Rails.application.routes.draw do
   end
 
   resources :subjects
+
+  resources :courses, only: [:index, :show, :create, :update] do
+    resources :users, only: [:index]
+  end
+  
+  resources :users, only: [:index, :show, :create, :update, :destroy]
 end

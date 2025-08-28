@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_06_29_173000) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
   create_table "alternatives", charset: "utf8mb3", force: :cascade do |t|
     t.text "text"
     t.boolean "correct"
@@ -52,6 +52,16 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_29_173000) do
     t.datetime "updated_at", null: false
     t.index ["answer_id"], name: "index_corrections_on_answer_id"
     t.index ["user_id"], name: "index_corrections_on_user_id"
+  end
+
+  create_table "courses", charset: "utf8mb3", force: :cascade do |t|
+    t.string "name", null: false
+    t.text "description"
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["code"], name: "index_courses_on_code", unique: true
+    t.index ["name"], name: "index_courses_on_name"
   end
 
   create_table "group_simulations", charset: "utf8mb3", force: :cascade do |t|
@@ -150,7 +160,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_29_173000) do
     t.integer "role", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "course_id"
     t.text "avatar"
+    t.index ["course_id"], name: "index_users_on_course_id"
   end
 
   add_foreign_key "alternatives", "questions"
@@ -167,8 +179,10 @@ ActiveRecord::Schema[8.0].define(version: 2025_06_29_173000) do
   add_foreign_key "notifications", "users"
   add_foreign_key "question_simulations", "questions"
   add_foreign_key "question_simulations", "simulations"
+  add_foreign_key "questions", "subjects"
   add_foreign_key "questions", "users"
   add_foreign_key "reports", "simulations"
   add_foreign_key "reports", "users"
   add_foreign_key "simulations", "users"
+  add_foreign_key "users", "courses"
 end

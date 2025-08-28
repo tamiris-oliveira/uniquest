@@ -3,8 +3,29 @@ class QuestionsController < ApplicationController
   before_action :set_question, only: [ :show, :update, :destroy ]
 
   def index
-    @questions = Question.includes(:alternatives).all
-    render json: @questions.to_json(include: :alternatives)
+    # Filtrar questões baseado no curso do usuário atual
+    if @current_user.course_id.present?
+      @questions = Question.includes(:alternatives, user: :course)
+                          .joins(:user)
+                          .where(users: { course_id: @current_user.course_id })
+    else
+      @questions = Question.includes(:alternatives, user: :course).all
+    end
+    
+    # Aplicar filtros adicionais
+    if params[:subject_id].present?
+      @questions = @questions.where(subject_id: params[:subject_id])
+    end
+    
+    if params[:question_type].present?
+      @questions = @questions.where(question_type: params[:question_type])
+    end
+    
+    if params[:search].present?
+      @questions = @questions.where('statement ILIKE ?', "%#{params[:search]}%")
+    end
+    
+    render json: @questions.map { |question| question_with_user_json(question) }
   end
 
   def create
@@ -18,12 +39,12 @@ class QuestionsController < ApplicationController
   end
 
   def show
-    render json: @question.to_json(include: :alternatives)
+    render json: question_with_user_json(@question)
   end
 
   def update
     if @question.update(question_params)
-      render json: @question.to_json(include: :alternatives)
+      render json: question_with_user_json(@question)
     else
       render json: { errors: @question.errors.full_messages }, status: :unprocessable_entity
     end
@@ -45,10 +66,27 @@ class QuestionsController < ApplicationController
   private
 
   def set_question
-    @question = Question.find(params[:id])
+    @question = Question.includes(:alternatives, user: :course).find(params[:id])
   end
 
   def question_params
     params.require(:question).permit(:statement, :question_type, :justification, :user_id, :subject_id, alternatives_attributes: [ :id, :text, :correct, :_destroy ])
+  end
+  
+  def question_with_user_json(question)
+    question.attributes.slice('id', 'statement', 'question_type', 'justification', 'subject_id', 'created_at', 'updated_at').merge(
+      user: question.user ? {
+        id: question.user.id,
+        name: question.user.name,
+        course: question.user.course ? {
+          id: question.user.course.id,
+          name: question.user.course.name,
+          code: question.user.course.code
+        } : nil
+      } : nil,
+      alternatives: question.alternatives.map do |alt|
+        alt.attributes.slice('id', 'text', 'correct')
+      end
+    )
   end
 end

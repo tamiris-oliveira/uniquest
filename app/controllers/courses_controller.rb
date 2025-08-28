@@ -1,19 +1,18 @@
 class CoursesController < ApplicationController
-  before_action :set_course, only: [:show]
+  before_action :authenticate_request!, except: [:index]
+  before_action :set_course, only: [:show, :update]
+  before_action :authorize_course_access!, only: [:show, :update]
   
   # GET /courses
-  # Lista todos os cursos com contagem de usuários
+  # Lista cursos baseado no perfil do usuário
   def index
-    @courses = Course.includes(:users)
-                    .by_name
-                    .select('courses.*, COUNT(users.id) as users_count')
+    @courses = accessible_courses
                     .left_joins(:users)
+                    .select('courses.*, COUNT(users.id) as users_count')
                     .group('courses.id')
+                    .order(:name)
     
-    respond_to do |format|
-      format.json { render json: courses_json(@courses) }
-      format.html
-    end
+    render json: courses_json(@courses)
   end
 
   # GET /courses/:id
@@ -21,9 +20,33 @@ class CoursesController < ApplicationController
   def show
     @users = @course.users.by_name.includes(:groups, :simulations)
     
-    respond_to do |format|
-      format.json { render json: course_json(@course, @users) }
-      format.html
+    render json: course_json(@course, @users)
+  end
+
+  # POST /courses
+  # Cria um novo curso (apenas superadmin)
+  def create
+    unless @current_user.role == 2 # Apenas superadmin
+      render json: { error: "Não autorizado" }, status: :forbidden
+      return
+    end
+    
+    @course = Course.new(course_params)
+    
+    if @course.save
+      render json: course_json(@course), status: :created
+    else
+      render json: { errors: @course.errors }, status: :unprocessable_entity
+    end
+  end
+
+  # PUT /courses/:id
+  # Atualiza um curso existente
+  def update
+    if @course.update(course_params)
+      render json: course_json(@course)
+    else
+      render json: { errors: @course.errors }, status: :unprocessable_entity
     end
   end
 
@@ -37,12 +60,9 @@ class CoursesController < ApplicationController
     @users = @users.where(role: params[:role]) if params[:role].present?
     @users = @users.joins(:groups).where(groups: { id: params[:group_id] }) if params[:group_id].present?
     
-    @users = @users.by_name.page(params[:page])
+    @users = @users.by_name
     
-    respond_to do |format|
-      format.json { render json: users_json(@users) }
-      format.html { render 'users/index' }
-    end
+    render json: users_json(@users)
   end
 
   # GET /courses/:id/statistics
@@ -59,16 +79,50 @@ class CoursesController < ApplicationController
       users_by_role: @course.users.group(:role).count
     }
     
-    respond_to do |format|
-      format.json { render json: stats }
-      format.html
-    end
+    render json: stats
   end
 
   private
 
   def set_course
     @course = Course.find(params[:id])
+  end
+
+  def course_params
+    params.require(:course).permit(:name, :code, :description)
+  end
+
+  # Retorna cursos acessíveis baseado no perfil do usuário
+  def accessible_courses
+    # Se não há usuário autenticado, retorna todos os cursos (acesso público)
+    return Course.all unless @current_user
+    
+    case @current_user.role
+    when 2 # Superadmin - vê todos os cursos
+      Course.all
+    when 1 # Professor - vê apenas seu curso
+      @current_user.course ? Course.where(id: @current_user.course_id) : Course.none
+    else # Estudante - vê apenas seu curso
+      @current_user.course ? Course.where(id: @current_user.course_id) : Course.none
+    end
+  end
+
+  # Verifica se o usuário pode acessar o curso específico
+  def authorize_course_access!
+    case @current_user.role
+    when 2 # Superadmin - acesso total
+      return true
+    when 1 # Professor - apenas seu curso
+      unless @current_user.course_id == @course.id
+        render json: { error: "Não autorizado" }, status: :forbidden
+        return false
+      end
+    else # Estudante - apenas visualização do seu curso
+      unless @current_user.course_id == @course.id
+        render json: { error: "Não autorizado" }, status: :forbidden
+        return false
+      end
+    end
   end
 
   def courses_json(courses)

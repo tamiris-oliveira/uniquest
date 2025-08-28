@@ -1,10 +1,17 @@
 class AuthenticationController < ApplicationController
   def login
-    @user = User.find_by(email: params[:email])
+    @user = User.includes(:course).find_by(email: params[:email])
 
     if @user && @user.authenticate(params[:password])
       token = encode_token({ user_id: @user.id, role: @user.role })
-      render json: { token: token, user: @user }, status: :ok
+      user_data = @user.attributes.merge(
+        course: @user.course ? {
+          id: @user.course.id,
+          name: @user.course.name,
+          code: @user.course.code
+        } : nil
+      )
+      render json: { token: token, user: user_data }, status: :ok
     else
       render json: { error: "Invalid credentials" }, status: :unauthorized
     end

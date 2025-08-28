@@ -1,11 +1,11 @@
 # Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
 
-one:
-  name: MyString
-  invite_code: MyString
-  users_id: 
+group_one:
+  name: "Turma A"
+  invite_code: "TURMA_A_2024"
+  creator_id: 2
 
-two:
-  name: MyString
-  invite_code: MyString
-  users_id: 
+group_two:
+  name: "Turma B"
+  invite_code: "TURMA_B_2024"
+  creator_id: 2 
