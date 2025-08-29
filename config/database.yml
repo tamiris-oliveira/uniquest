@@ -24,3 +24,16 @@ test:
 production:
   <<: *default
   url: <%= ENV['DATABASE_URL'] %>
+
+# Configurações para Solid Cache, Queue e Cable
+cache:
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
+
+queue:
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
+
+cable:
+  <<: *default
+  url: <%= ENV['DATABASE_URL'] %>
