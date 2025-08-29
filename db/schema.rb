@@ -11,7 +11,6 @@
 # It's strongly recommended that you check this file into your version control system.
 
 ActiveRecord::Schema[8.0].define(version: 2025_08_29_173242) do
-  create_schema "crdb_internal"
 
   create_table "alternatives", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.text "text"
