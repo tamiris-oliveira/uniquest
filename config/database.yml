@@ -10,7 +10,7 @@ development:
   host: wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud
   port: 26257
   database: defaultdb
-  sslmode: verify-full
+  sslmode: require
 
 test:
   <<: *default
@@ -19,7 +19,7 @@ test:
   host: wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud
   port: 26257
   database: defaultdb
-  sslmode: verify-full
+  sslmode: require
 
 production:
   <<: *default
