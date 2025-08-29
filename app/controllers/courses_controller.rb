@@ -6,13 +6,25 @@ class CoursesController < ApplicationController
   # GET /courses
   # Lista cursos baseado no perfil do usuário
   def index
-    @courses = accessible_courses
-                    .left_joins(:users)
-                    .select('courses.*, COUNT(users.id) as users_count')
-                    .group('courses.id')
-                    .order(:name)
-    
-    render json: courses_json(@courses)
+    begin
+      # Primeiro, vamos testar sem a query complexa
+      @courses = accessible_courses
+      
+      # Se chegou até aqui, vamos tentar a query complexa
+      @courses = @courses.left_joins(:users)
+                        .select('courses.*, COUNT(users.id) as users_count')
+                        .group('courses.id')
+                        .order(:name)
+      
+      render json: courses_json(@courses)
+    rescue => e
+      # Debug temporário - remover depois
+      render json: { 
+        error: "Debug: #{e.message}", 
+        backtrace: e.backtrace.first(5),
+        courses_count: Course.count rescue "N/A"
+      }, status: 500
+    end
   end
 
   # GET /courses/:id
