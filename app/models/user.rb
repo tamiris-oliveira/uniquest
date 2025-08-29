@@ -19,9 +19,6 @@ class User < ApplicationRecord
   # Scopes
   scope :by_course, ->(course_id) { where(course_id: course_id) if course_id.present? }
   scope :by_name, -> { order(:name) }
-  scope :students, -> { where(role: 0) }
-  scope :teachers, -> { where(role: 1) }
-  scope :admins, -> { where(role: 2) }
   
   # Methods
   def course_name
