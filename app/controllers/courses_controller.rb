@@ -19,10 +19,16 @@ class CoursesController < ApplicationController
       render json: courses_json(@courses)
     rescue => e
       # Debug temporário - remover depois
+      courses_count = begin
+        Course.count
+      rescue
+        "N/A"
+      end
+      
       render json: { 
         error: "Debug: #{e.message}", 
         backtrace: e.backtrace.first(5),
-        courses_count: Course.count rescue "N/A"
+        courses_count: courses_count
       }, status: 500
     end
   end
