@@ -4,6 +4,16 @@ class AttemptsController < ApplicationController
 
   def index
     attempts = Attempt.includes(:user, simulation: [], answers: [question: :alternatives, corrections: []]).all
+    
+    # Filtrar por simulation_id se fornecido
+    if params[:simulation_id].present?
+      attempts = attempts.where(simulation_id: params[:simulation_id])
+    end
+    
+    # Filtrar por user_id se fornecido
+    if params[:user_id].present?
+      attempts = attempts.where(user_id: params[:user_id])
+    end
   
     render json: attempts.map { |attempt|
       {
