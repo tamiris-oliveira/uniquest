@@ -12,12 +12,18 @@ class CleanupOrphanedMigrations < ActiveRecord::Migration[8.0]
       '20250828004217', '20250829173242'
     ]
     
-    # Remove as referências órfãs da tabela schema_migrations
+    # Remove as referências órfãs da tabela schema_migrations de forma segura
+    removed_count = 0
     orphaned_migrations.each do |version|
-      execute "DELETE FROM schema_migrations WHERE version = '#{version}'"
+      begin
+        result = execute "DELETE FROM schema_migrations WHERE version = '#{version}'"
+        removed_count += 1 if result
+      rescue => e
+        puts "Warning: Could not remove migration #{version}: #{e.message}"
+      end
     end
     
-    puts "Removed #{orphaned_migrations.length} orphaned migration references"
+    puts "Removed #{removed_count} orphaned migration references"
   end
 
   def down

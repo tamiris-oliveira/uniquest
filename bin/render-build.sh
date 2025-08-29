@@ -7,8 +7,9 @@ bundle install
 bundle exec rails assets:precompile
 bundle exec rails assets:clean
 
-# Force migration execution for course_id column
+# Run database migrations
 bundle exec rails db:migrate:status
-bundle exec rails db:migrate VERSION=20250827142226
+# Force cleanup orphaned migrations first
+bundle exec rails db:migrate VERSION=20250829220608
 bundle exec rails db:migrate
 bundle exec rails db:seed
