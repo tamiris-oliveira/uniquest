@@ -1,23 +1,26 @@
 default: &default
-  adapter: mysql2
-  encoding: utf8
+  adapter: postgresql
+  encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: root
-  password: root
-
-  host: localhost
 
 development:
   <<: *default
-  database: uniquest_development
+  username: tamiris
+  password: _PBPzuhMJLiJCf9PiAY8gA
+  host: wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud
+  port: 26257
+  database: defaultdb
+  sslmode: verify-full
 
 test:
   <<: *default
-  database: uniquest_test
+  username: tamiris
+  password: _PBPzuhMJLiJCf9PiAY8gA
+  host: wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud
+  port: 26257
+  database: defaultdb
+  sslmode: verify-full
 
 production:
   <<: *default
-  database: uniquest_production
-  username: root
-  password: root
-  host: localhost
+  url: <%= ENV['DATABASE_URL'] %>

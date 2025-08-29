@@ -10,8 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
-  create_table "alternatives", charset: "utf8mb3", force: :cascade do |t|
+ActiveRecord::Schema[8.0].define(version: 2025_08_29_173242) do
+  create_schema "crdb_internal"
+
+  create_table "alternatives", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.text "text"
     t.boolean "correct"
     t.bigint "question_id", null: false
@@ -20,7 +22,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
     t.index ["question_id"], name: "index_alternatives_on_question_id"
   end
 
-  create_table "answers", charset: "utf8mb3", force: :cascade do |t|
+  create_table "answers", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.text "student_answer"
     t.boolean "correct"
     t.bigint "question_id", null: false
@@ -31,7 +33,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
     t.index ["question_id"], name: "index_answers_on_question_id"
   end
 
-  create_table "attempts", charset: "utf8mb3", force: :cascade do |t|
+  create_table "attempts", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.datetime "attempt_date"
     t.bigint "simulation_id", null: false
     t.bigint "user_id", null: false
@@ -42,9 +44,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
     t.index ["user_id"], name: "index_attempts_on_user_id"
   end
 
-  create_table "corrections", charset: "utf8mb3", force: :cascade do |t|
+  create_table "corrections", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.bigint "answer_id", null: false
-    t.decimal "grade", precision: 10
+    t.decimal "grade"
     t.text "feedback"
     t.datetime "correction_date"
     t.bigint "user_id", null: false
@@ -54,17 +56,17 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
     t.index ["user_id"], name: "index_corrections_on_user_id"
   end
 
-  create_table "courses", charset: "utf8mb3", force: :cascade do |t|
+  create_table "courses", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.string "name", null: false
     t.text "description"
     t.string "code", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["code"], name: "index_courses_on_code", unique: true
     t.index ["name"], name: "index_courses_on_name"
+    t.unique_constraint ["code"], name: "index_courses_on_code"
   end
 
-  create_table "group_simulations", charset: "utf8mb3", force: :cascade do |t|
+  create_table "group_simulations", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.bigint "group_id", null: false
     t.bigint "simulation_id", null: false
     t.datetime "created_at", null: false
@@ -73,7 +75,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
     t.index ["simulation_id"], name: "index_group_simulations_on_simulation_id"
   end
 
-  create_table "group_users", charset: "utf8mb3", force: :cascade do |t|
+  create_table "group_users", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "group_id", null: false
     t.datetime "created_at", null: false
@@ -82,15 +84,15 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
     t.index ["user_id"], name: "index_group_users_on_user_id"
   end
 
-  create_table "groups", charset: "utf8mb3", force: :cascade do |t|
+  create_table "groups", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.string "name"
     t.string "invite_code"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "creator_id"
+    t.bigint "creator_id"
   end
 
-  create_table "notifications", charset: "utf8mb3", force: :cascade do |t|
+  create_table "notifications", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.bigint "user_id", null: false
     t.text "message"
     t.boolean "viewed"
@@ -100,7 +102,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
     t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
-  create_table "question_simulations", charset: "utf8mb3", force: :cascade do |t|
+  create_table "question_simulations", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.bigint "simulation_id", null: false
     t.bigint "question_id", null: false
     t.datetime "created_at", null: false
@@ -109,7 +111,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
     t.index ["simulation_id"], name: "index_question_simulations_on_simulation_id"
   end
 
-  create_table "questions", charset: "utf8mb3", force: :cascade do |t|
+  create_table "questions", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.text "statement"
     t.string "question_type"
     t.text "justification"
@@ -121,12 +123,12 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
     t.index ["user_id"], name: "index_questions_on_user_id"
   end
 
-  create_table "reports", charset: "utf8mb3", force: :cascade do |t|
+  create_table "reports", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.bigint "user_id", null: false
     t.bigint "simulation_id", null: false
-    t.integer "correct_answers"
-    t.integer "incorrect_answers"
-    t.decimal "total_grade", precision: 10
+    t.bigint "correct_answers"
+    t.bigint "incorrect_answers"
+    t.decimal "total_grade"
     t.datetime "generation_date"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
@@ -134,7 +136,7 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
     t.index ["user_id"], name: "index_reports_on_user_id"
   end
 
-  create_table "simulations", charset: "utf8mb3", force: :cascade do |t|
+  create_table "simulations", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.string "title"
     t.text "description"
     t.datetime "creation_date"
@@ -142,27 +144,25 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.integer "time_limit"
-    t.integer "max_attempts", default: 1
+    t.bigint "time_limit"
+    t.bigint "max_attempts", default: 1
     t.index ["user_id"], name: "index_simulations_on_user_id"
   end
 
-  create_table "subjects", charset: "utf8mb3", force: :cascade do |t|
+  create_table "subjects", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.string "name"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
   end
 
-  create_table "users", charset: "utf8mb3", force: :cascade do |t|
+  create_table "users", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.string "name"
     t.string "email"
     t.string "password_digest"
-    t.integer "role", default: 0, null: false
+    t.bigint "role", default: 0, null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "course_id"
     t.text "avatar"
-    t.index ["course_id"], name: "index_users_on_course_id"
   end
 
   add_foreign_key "alternatives", "questions"
@@ -184,5 +184,4 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_28_004217) do
   add_foreign_key "reports", "simulations"
   add_foreign_key "reports", "users"
   add_foreign_key "simulations", "users"
-  add_foreign_key "users", "courses"
 end
