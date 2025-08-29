@@ -23,17 +23,37 @@ test:
 
 production:
   <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
+  username: <%= ENV['DB_USERNAME'] || 'tamiris' %>
+  password: <%= ENV['DB_PASSWORD'] || '_PBPzuhMJLiJCf9PiAY8gA' %>
+  host: <%= ENV['DB_HOST'] || 'wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud' %>
+  port: <%= ENV['DB_PORT'] || '26257' %>
+  database: <%= ENV['DB_NAME'] || 'uniquest' %>
+  sslmode: require
 
 # Configurações para Solid Cache, Queue e Cable
 cache:
   <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
+  username: <%= ENV['DB_USERNAME'] || 'tamiris' %>
+  password: <%= ENV['DB_PASSWORD'] || '_PBPzuhMJLiJCf9PiAY8gA' %>
+  host: <%= ENV['DB_HOST'] || 'wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud' %>
+  port: <%= ENV['DB_PORT'] || '26257' %>
+  database: <%= ENV['DB_NAME'] || 'uniquest' %>
+  sslmode: require
 
 queue:
   <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
+  username: <%= ENV['DB_USERNAME'] || 'tamiris' %>
+  password: <%= ENV['DB_PASSWORD'] || '_PBPzuhMJLiJCf9PiAY8gA' %>
+  host: <%= ENV['DB_HOST'] || 'wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud' %>
+  port: <%= ENV['DB_PORT'] || '26257' %>
+  database: <%= ENV['DB_NAME'] || 'uniquest' %>
+  sslmode: require
 
 cable:
   <<: *default
-  url: <%= ENV['DATABASE_URL'] %>
+  username: <%= ENV['DB_USERNAME'] || 'tamiris' %>
+  password: <%= ENV['DB_PASSWORD'] || '_PBPzuhMJLiJCf9PiAY8gA' %>
+  host: <%= ENV['DB_HOST'] || 'wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud' %>
+  port: <%= ENV['DB_PORT'] || '26257' %>
+  database: <%= ENV['DB_NAME'] || 'uniquest' %>
+  sslmode: require
