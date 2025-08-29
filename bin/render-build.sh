@@ -7,6 +7,7 @@ bundle install
 bundle exec rails assets:precompile
 bundle exec rails assets:clean
 
-# Reset database safely for CockroachDB
-DISABLE_DATABASE_ENVIRONMENT_CHECK=1 bundle exec rails db:reset
+# Reset database step by step for CockroachDB
+DISABLE_DATABASE_ENVIRONMENT_CHECK=1 bundle exec rails db:schema:drop
+bundle exec rails db:migrate
 bundle exec rails db:seed
