@@ -34,11 +34,19 @@ class SimulationsController < ApplicationController
 
 
   def question_with_alternatives_json(question)
-    question.attributes.slice('id', 'statement', 'justification', 'question_type').merge(
+    {
+      id: question.id.to_s,
+      statement: question.statement,
+      justification: question.justification,
+      question_type: question.question_type,
       alternatives: question.alternatives.map do |alt|
-        alt.attributes.slice('id', 'text', 'correct')
+        {
+          id: alt.id.to_s,
+          text: alt.text,
+          correct: alt.correct
+        }
       end
-    )
+    }
   end
   
   
@@ -161,7 +169,7 @@ class SimulationsController < ApplicationController
   private
 
   def set_simulation
-    @simulation = Simulation.includes(:groups, :questions).find_by(id: params[:id])
+    @simulation = Simulation.includes(:groups, :questions).find_by(id: params[:id].to_i)
     return if @simulation
 
     render json: { error: "Simulação não encontrada." }, status: :not_found
@@ -175,12 +183,22 @@ class SimulationsController < ApplicationController
   end
 
   def simulation_json(simulation)
-    simulation.attributes.merge(
-      groups: simulation.groups.map { |g| g.slice(:id, :name, :invite_code) },
+    {
+      id: simulation.id.to_s,
+      title: simulation.title,
+      description: simulation.description,
+      creation_date: simulation.creation_date,
+      deadline: simulation.deadline,
+      time_limit: simulation.time_limit,
+      max_attempts: simulation.max_attempts,
+      user_id: simulation.user_id.to_s,
+      created_at: simulation.created_at,
+      updated_at: simulation.updated_at,
+      groups: simulation.groups.map { |g| { id: g.id.to_s, name: g.name, invite_code: g.invite_code } },
       questions: simulation.questions.includes(:alternatives).map do |q|
         question_with_alternatives_json(q)
       end
-    )
+    }
   end
 
 

@@ -15,59 +15,17 @@ class AttemptsController < ApplicationController
       attempts = attempts.where(user_id: params[:user_id])
     end
   
-    render json: attempts.map { |attempt|
-      {
-        id: attempt.id,
-        attempt_date: attempt.attempt_date,
-        user: {
-          id: attempt.user.id,
-          name: attempt.user.name,
-          email: attempt.user.email
-        },
-        simulation: {
-          id: attempt.simulation.id,
-          title: attempt.simulation.title,
-          deadline: attempt.simulation.deadline
-        },
-        answers: attempt.answers.map do |answer|
-          last_correction = answer.corrections.order(correction_date: :desc).first
-  
-          {
-            id: answer.id,
-            student_answer: answer.student_answer,
-            correct: answer.correct,
-            question: {
-              id: answer.question.id,
-              statement: answer.question.statement,
-              question_type: answer.question.question_type,
-              alternatives: answer.question.alternatives.map do |alt|
-                {
-                  id: alt.id,
-                  text: alt.text,
-                  correct: alt.correct
-                }
-              end
-            },
-            correction: last_correction ? {
-              id: last_correction.id,
-              grade: last_correction.grade,
-              feedback: last_correction.feedback,
-              correction_date: last_correction.correction_date
-            } : nil
-          }
-        end
-      }
-    }
+        render json: attempts.map { |attempt| attempt_json(attempt) }
   end
   
   
 
   def show
-    render json: @attempt
+    render json: attempt_json(@attempt)
   end
 
   def create
-    simulation = Simulation.find_by(id: params[:attempt][:simulation_id])
+    simulation = Simulation.find_by(id: params[:attempt][:simulation_id].to_i)
     return render json: { error: "Simulado não encontrado." }, status: :not_found unless simulation
 
     if simulation.max_attempts.present?
@@ -110,7 +68,7 @@ class AttemptsController < ApplicationController
     end
   
     answers_params.each do |param|
-      question = Question.find(param[:question_id])
+      question = Question.find(param[:question_id].to_i)
       is_correct = nil
       grade = nil
   
@@ -167,12 +125,57 @@ class AttemptsController < ApplicationController
   
 
   def set_attempt
-    @attempt = Attempt.find(params[:id])
+    @attempt = Attempt.find(params[:id].to_i)
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Tentativa não encontrada." }, status: :not_found
   end
 
   def attempt_params
     params.require(:attempt).permit(:simulation_id)
+  end
+
+  def attempt_json(attempt)
+    {
+      id: attempt.id.to_s,
+      attempt_date: attempt.attempt_date,
+      final_grade: attempt.final_grade,
+      user: {
+        id: attempt.user.id.to_s,
+        name: attempt.user.name,
+        email: attempt.user.email
+      },
+      simulation: {
+        id: attempt.simulation.id.to_s,
+        title: attempt.simulation.title,
+        deadline: attempt.simulation.deadline
+      },
+      answers: attempt.answers.map do |answer|
+        last_correction = answer.corrections.order(correction_date: :desc).first
+
+        {
+          id: answer.id.to_s,
+          student_answer: answer.student_answer,
+          correct: answer.correct,
+          question: {
+            id: answer.question.id.to_s,
+            statement: answer.question.statement,
+            question_type: answer.question.question_type,
+            alternatives: answer.question.alternatives.map do |alt|
+              {
+                id: alt.id.to_s,
+                text: alt.text,
+                correct: alt.correct
+              }
+            end
+          },
+          correction: last_correction ? {
+            id: last_correction.id.to_s,
+            grade: last_correction.grade,
+            feedback: last_correction.feedback,
+            correction_date: last_correction.correction_date
+          } : nil
+        }
+      end
+    }
   end
 end

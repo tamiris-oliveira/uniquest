@@ -5,7 +5,7 @@ class CorrectionsController < ApplicationController
 
   def index
     @corrections = @answer.corrections
-    render json: @corrections
+    render json: corrections_json(@corrections)
   end
 
   def create
@@ -13,20 +13,20 @@ class CorrectionsController < ApplicationController
 
     if @correction.save
       update_attempt_final_grade(@answer.attempt)
-      render json: @correction, status: :created, location: correction_url(@correction)
+      render json: correction_json(@correction), status: :created, location: correction_url(@correction)
     else
       render json: @correction.errors, status: :unprocessable_entity
     end
   end
 
   def show
-    render json: @correction
+    render json: correction_json(@correction)
   end
 
   def update
     if @correction.update(correction_params)
       update_attempt_final_grade(@correction.answer.attempt)
-      render json: @correction
+      render json: correction_json(@correction)
     else
       render json: @correction.errors, status: :unprocessable_entity
     end
@@ -42,11 +42,15 @@ class CorrectionsController < ApplicationController
   private
 
   def set_answer
-    @answer = Answer.find(params[:answer_id])
+    @answer = Answer.find(params[:answer_id].to_i)
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Resposta não encontrada" }, status: :not_found
   end
 
   def set_correction
-    @correction = Correction.find(params[:id])
+    @correction = Correction.find(params[:id].to_i)
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Correção não encontrada" }, status: :not_found
   end
 
   def correction_params
@@ -62,5 +66,22 @@ class CorrectionsController < ApplicationController
     end.compact
     total_grade = last_corrections.sum { |correction| correction.grade.to_f }
     attempt.update(final_grade: total_grade)
+  end
+
+  def correction_json(correction)
+    {
+      id: correction.id.to_s,
+      grade: correction.grade,
+      feedback: correction.feedback,
+      correction_date: correction.correction_date,
+      answer_id: correction.answer_id.to_s,
+      user_id: correction.user_id.to_s,
+      created_at: correction.created_at,
+      updated_at: correction.updated_at
+    }
+  end
+
+  def corrections_json(corrections)
+    corrections.map { |correction| correction_json(correction) }
   end
 end

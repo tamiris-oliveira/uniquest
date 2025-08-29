@@ -43,13 +43,13 @@ class AnswersController < ApplicationController
   private
 
   def set_attempt
-    @attempt = Attempt.find(params[:attempt_id])
+    @attempt = Attempt.find(params[:attempt_id].to_i)
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Tentativa não encontrada" }, status: :not_found
   end
 
   def set_answer
-    @answer = Answer.includes(:corrections, question: :alternatives).find(params[:id])
+    @answer = Answer.includes(:corrections, question: :alternatives).find(params[:id].to_i)
   rescue ActiveRecord::RecordNotFound
     render json: { error: "Resposta não encontrada" }, status: :not_found
   end
@@ -59,21 +59,33 @@ class AnswersController < ApplicationController
   end
 
   def answer_with_question_json(answer)
-    answer.attributes.merge(
+    {
+      id: answer.id.to_s,
+      student_answer: answer.student_answer,
+      correct: answer.correct,
+      question_id: answer.question_id.to_s,
+      attempt_id: answer.attempt_id.to_s,
+      created_at: answer.created_at,
+      updated_at: answer.updated_at,
       question: {
-        id: answer.question.id,
+        id: answer.question.id.to_s,
         statement: answer.question.statement,
         question_type: answer.question.question_type,
         justification: answer.question.justification,
         alternatives: answer.question.alternatives.map do |alt|
           {
-            id: alt.id,
+            id: alt.id.to_s,
             text: alt.text,
             correct: alt.correct
           }
         end
       },
-      correction: answer.corrections.last&.as_json(only: [:id, :grade, :feedback, :correction_date])
-    )
+      correction: answer.corrections.last ? {
+        id: answer.corrections.last.id.to_s,
+        grade: answer.corrections.last.grade,
+        feedback: answer.corrections.last.feedback,
+        correction_date: answer.corrections.last.correction_date
+      } : nil
+    }
   end
 end

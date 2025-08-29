@@ -66,7 +66,9 @@ class QuestionsController < ApplicationController
   private
 
   def set_question
-    @question = Question.includes(:alternatives, user: :course).find(params[:id])
+    @question = Question.includes(:alternatives, user: :course).find(params[:id].to_i)
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Questão não encontrada" }, status: :not_found
   end
 
   def question_params
@@ -74,19 +76,30 @@ class QuestionsController < ApplicationController
   end
   
   def question_with_user_json(question)
-    question.attributes.slice('id', 'statement', 'question_type', 'justification', 'subject_id', 'created_at', 'updated_at').merge(
+    {
+      id: question.id.to_s,
+      statement: question.statement,
+      question_type: question.question_type,
+      justification: question.justification,
+      subject_id: question.subject_id.to_s,
+      created_at: question.created_at,
+      updated_at: question.updated_at,
       user: question.user ? {
-        id: question.user.id,
+        id: question.user.id.to_s,
         name: question.user.name,
         course: question.user.course ? {
-          id: question.user.course.id,
+          id: question.user.course.id.to_s,
           name: question.user.course.name,
           code: question.user.course.code
         } : nil
       } : nil,
       alternatives: question.alternatives.map do |alt|
-        alt.attributes.slice('id', 'text', 'correct')
+        {
+          id: alt.id.to_s,
+          text: alt.text,
+          correct: alt.correct
+        }
       end
-    )
+    }
   end
 end

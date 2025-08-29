@@ -102,7 +102,7 @@ class GroupsController < ApplicationController
 
   def add_user
     group = find_group
-    user = User.includes(:course).find_by(id: params[:user_id])
+    user = User.includes(:course).find_by(id: params[:user_id].to_i)
     return render json: { error: "Usuário não encontrado." }, status: :not_found unless user
 
     # Verificar se o usuário é do mesmo curso (se o usuário atual tem curso)
@@ -119,7 +119,7 @@ class GroupsController < ApplicationController
   private
 
   def find_group
-    group = Group.includes(users: :course).find_by(id: params[:id])
+    group = Group.includes(users: :course).find_by(id: params[:id].to_i)
     unless group
       render json: { error: "Grupo não encontrado." }, status: :not_found
       return nil
@@ -133,20 +133,26 @@ class GroupsController < ApplicationController
   end
   
   def group_with_users_json(group)
-    group.attributes.merge(
+    {
+      id: group.id.to_s,
+      name: group.name,
+      invite_code: group.invite_code,
+      creator_id: group.creator_id&.to_s,
+      created_at: group.created_at,
+      updated_at: group.updated_at,
       users: group.users.map do |user|
         {
-          id: user.id,
+          id: user.id.to_s,
           name: user.name,
           email: user.email,
           role: user.role,
           course: user.course ? {
-            id: user.course.id,
+            id: user.course.id.to_s,
             name: user.course.name,
             code: user.course.code
           } : nil
         }
       end
-    )
+    }
   end
 end

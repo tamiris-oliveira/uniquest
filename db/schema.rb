@@ -10,7 +10,12 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_29_173242) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_29_215315) do
+  create_schema "crdb_internal"
+
+  # Custom types defined in this database.
+  # Note that some types may not work with other database engines. Be careful if changing database.
+  create_enum "crdb_internal_region", ["aws-us-east-1"]
 
   create_table "alternatives", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.text "text"
@@ -34,11 +39,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_29_173242) do
 
   create_table "attempts", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.datetime "attempt_date"
+    t.decimal "final_grade", precision: 10, scale: 2
     t.bigint "simulation_id", null: false
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.decimal "final_grade", precision: 10, scale: 2
     t.index ["simulation_id"], name: "index_attempts_on_simulation_id"
     t.index ["user_id"], name: "index_attempts_on_user_id"
   end
@@ -86,9 +91,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_29_173242) do
   create_table "groups", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.string "name"
     t.string "invite_code"
+    t.bigint "creator_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "creator_id"
   end
 
   create_table "notifications", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
@@ -115,9 +120,9 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_29_173242) do
     t.string "question_type"
     t.text "justification"
     t.bigint "user_id", null: false
+    t.bigint "subject_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "subject_id", null: false
     t.index ["subject_id"], name: "index_questions_on_subject_id"
     t.index ["user_id"], name: "index_questions_on_user_id"
   end
@@ -140,11 +145,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_29_173242) do
     t.text "description"
     t.datetime "creation_date"
     t.datetime "deadline", precision: nil
+    t.bigint "time_limit"
+    t.bigint "max_attempts", default: 1
     t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.bigint "time_limit"
-    t.bigint "max_attempts", default: 1
     t.index ["user_id"], name: "index_simulations_on_user_id"
   end
 
@@ -159,9 +164,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_29_173242) do
     t.string "email"
     t.string "password_digest"
     t.bigint "role", default: 0, null: false
+    t.text "avatar"
+    t.bigint "course_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.text "avatar"
+    t.index ["course_id"], name: "idx_users_course_id"
   end
 
   add_foreign_key "alternatives", "questions"
@@ -183,4 +190,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_29_173242) do
   add_foreign_key "reports", "simulations"
   add_foreign_key "reports", "users"
   add_foreign_key "simulations", "users"
+  add_foreign_key "users", "courses", name: "fk_users_course_id"
 end

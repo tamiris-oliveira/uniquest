@@ -5,25 +5,25 @@ class AlternativesController < ApplicationController
 
   def index
     alternatives = @question.alternatives
-    render json: alternatives
+    render json: alternatives_json(alternatives)
   end
 
   def create
     alternative = @question.alternatives.build(alternative_params)
     if alternative.save
-      render json: alternative, status: :created, location: question_alternative_url(@question, alternative)
+      render json: alternative_json(alternative), status: :created, location: question_alternative_url(@question, alternative)
     else
       render json: { errors: alternative.errors.full_messages }, status: :unprocessable_entity
     end
   end
 
   def show
-    render json: @alternative
+    render json: alternative_json(@alternative)
   end
 
   def update
     if @alternative.update(alternative_params)
-      render json: @alternative
+      render json: alternative_json(@alternative)
     else
       render json: { errors: @alternative.errors.full_messages }, status: :unprocessable_entity
     end
@@ -39,16 +39,31 @@ class AlternativesController < ApplicationController
   private
 
   def set_question
-    @question = Question.find_by(id: params[:question_id])
+    @question = Question.find_by(id: params[:question_id].to_i)
     render json: { error: "Questão não encontrada." }, status: :not_found unless @question
   end
 
   def set_alternative
-    @alternative = @question.alternatives.find_by(id: params[:id])
+    @alternative = @question.alternatives.find_by(id: params[:id].to_i)
     render json: { error: "Alternativa não encontrada." }, status: :not_found unless @alternative
   end
 
   def alternative_params
     params.require(:alternative).permit(:text, :correct)
+  end
+
+  def alternative_json(alternative)
+    {
+      id: alternative.id.to_s,
+      text: alternative.text,
+      correct: alternative.correct,
+      question_id: alternative.question_id.to_s,
+      created_at: alternative.created_at,
+      updated_at: alternative.updated_at
+    }
+  end
+
+  def alternatives_json(alternatives)
+    alternatives.map { |alt| alternative_json(alt) }
   end
 end

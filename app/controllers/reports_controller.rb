@@ -25,7 +25,7 @@ class ReportsController < ApplicationController
 
   # GET /reports/teacher/group_summary/:group_id
   def group_summary
-    group = Group.find_by(id: params[:group_id])
+    group = Group.find_by(id: params[:group_id].to_i)
     return render_not_found("Grupo") unless group
 
     start_date, end_date = parse_period(params)
@@ -36,7 +36,7 @@ class ReportsController < ApplicationController
 
   # GET /reports/teacher/simulation_details/:simulation_id
   def simulation_details
-    simulation = Simulation.find_by(id: params[:simulation_id])
+    simulation = Simulation.find_by(id: params[:simulation_id].to_i)
     return render_not_found("Simulado") unless simulation
 
     render json: teacher_simulation_data(simulation)
@@ -142,7 +142,7 @@ class ReportsController < ApplicationController
 
     # Ranking
     ranking = attempts.order(final_grade: :desc).map do |attempt|
-      { name: attempt.user.name, grade: attempt.final_grade&.round(2) || 0 }
+      { id: attempt.user.id.to_s, name: attempt.user.name, grade: attempt.final_grade&.round(2) || 0 }
     end
 
     # Questões mais difíceis

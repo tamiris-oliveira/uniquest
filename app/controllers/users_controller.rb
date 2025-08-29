@@ -58,12 +58,20 @@ class UsersController < ApplicationController
   end
   
   def user_with_course_json(user)
-    user.attributes.merge(
+    {
+      id: user.id.to_s,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      avatar: user.avatar,
+      course_id: user.course_id&.to_s,
+      created_at: user.created_at,
+      updated_at: user.updated_at,
       course: user.course ? {
-        id: user.course.id,
+        id: user.course.id.to_s,
         name: user.course.name,
         code: user.course.code
       } : nil
-    )
+    }
   end
 end

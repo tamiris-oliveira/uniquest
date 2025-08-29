@@ -53,7 +53,7 @@ class CoursesController < ApplicationController
   # GET /courses/:id/users
   # Lista usuários de um curso específico com filtros
   def users
-    @course = Course.find(params[:id])
+    @course = Course.find(params[:id].to_i)
     @users = @course.users.includes(:groups, :simulations)
     
     # Filtros opcionais
@@ -63,12 +63,14 @@ class CoursesController < ApplicationController
     @users = @users.by_name
     
     render json: users_json(@users)
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Curso não encontrado" }, status: :not_found
   end
 
   # GET /courses/:id/statistics
   # Estatísticas do curso
   def statistics
-    @course = Course.find(params[:id])
+    @course = Course.find(params[:id].to_i)
     
     stats = {
       total_users: @course.users.count,
@@ -80,12 +82,16 @@ class CoursesController < ApplicationController
     }
     
     render json: stats
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Curso não encontrado" }, status: :not_found
   end
 
   private
 
   def set_course
-    @course = Course.find(params[:id])
+    @course = Course.find(params[:id].to_i)
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: "Curso não encontrado" }, status: :not_found
   end
 
   def course_params
@@ -128,7 +134,7 @@ class CoursesController < ApplicationController
   def courses_json(courses)
     courses.map do |course|
       {
-        id: course.id,
+        id: course.id.to_s,
         name: course.name,
         code: course.code,
         description: course.description,
@@ -140,7 +146,7 @@ class CoursesController < ApplicationController
 
   def course_json(course, users = nil)
     {
-      id: course.id,
+      id: course.id.to_s,
       name: course.name,
       code: course.code,
       description: course.description,
@@ -156,7 +162,7 @@ class CoursesController < ApplicationController
   def users_json(users)
     users.map do |user|
       {
-        id: user.id,
+        id: user.id.to_s,
         name: user.name,
         email: user.email,
         role: user.role,
