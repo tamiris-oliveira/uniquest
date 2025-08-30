@@ -146,12 +146,12 @@
         
         <div class="info-item">
           <span class="info-label">📅 Data da Tentativa:</span>
-          <span class="info-value"><%= @attempt.attempt_date.strftime("%d/%m/%Y às %H:%M") %></span>
+          <span class="info-value"><%= @attempt.attempt_date.in_time_zone("America/Sao_Paulo").strftime("%d/%m/%Y às %H:%M") %> (horário de Brasília)</span>
         </div>
 
         <div class="info-item">
           <span class="info-label">📝 Data da Correção:</span>
-          <span class="info-value"><%= @correction.correction_date.strftime("%d/%m/%Y às %H:%M") %></span>
+          <span class="info-value"><%= @correction.correction_date.in_time_zone("America/Sao_Paulo").strftime("%d/%m/%Y às %H:%M") %> (horário de Brasília)</span>
         </div>
       </div>
 
@@ -192,7 +192,7 @@
       <% end %>
 
       <div style="text-align: center;">
-        <a href="#" class="cta-button">📊 Ver Detalhes Completos</a>
+        <a href="<%= @correction_url %>" class="cta-button">📊 Ver Detalhes Completos</a>
       </div>
 
       <p><strong>Continue estudando!</strong> Use este feedback para melhorar seu desempenho nas próximas tentativas. 📚</p>

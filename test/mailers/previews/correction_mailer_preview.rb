@@ -17,7 +17,7 @@ class CorrectionMailerPreview < ActionMailer::Preview
     )
     
     attempt = Attempt.first || Attempt.new(
-      attempt_date: 2.days.ago,
+      attempt_date: 2.days.ago.in_time_zone("America/Sao_Paulo"),
       user: user,
       simulation: simulation
     )
@@ -32,7 +32,7 @@ class CorrectionMailerPreview < ActionMailer::Preview
     correction = Correction.first || Correction.new(
       grade: 8.5,
       feedback: "Excelente resposta! Você demonstrou compreensão clara do conceito de força centrípeta e forneceu exemplos relevantes. Para uma resposta ainda mais completa, poderia ter mencionado a relação matemática F = mv²/r. Continue assim!",
-      correction_date: 1.day.ago,
+      correction_date: 1.day.ago.in_time_zone("America/Sao_Paulo"),
       answer: answer,
       user_id: 1
     )

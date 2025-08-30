@@ -8,8 +8,8 @@ A correção de uma das suas respostas está disponível:
 SIMULADO: <%= @simulation.title %>
 
 DETALHES DA CORREÇÃO:
-- Data da Tentativa: <%= @attempt.attempt_date.strftime("%d/%m/%Y às %H:%M") %>
-- Data da Correção: <%= @correction.correction_date.strftime("%d/%m/%Y às %H:%M") %>
+- Data da Tentativa: <%= @attempt.attempt_date.in_time_zone("America/Sao_Paulo").strftime("%d/%m/%Y às %H:%M") %> (horário de Brasília)
+- Data da Correção: <%= @correction.correction_date.in_time_zone("America/Sao_Paulo").strftime("%d/%m/%Y às %H:%M") %> (horário de Brasília)
 <% if @correction.grade.present? %>
 - Nota Obtida: <%= @correction.grade.to_f.round(1) %>
 <% end %>
@@ -32,7 +32,9 @@ FEEDBACK DO PROFESSOR:
 <%= @correction.feedback %>
 <% end %>
 
-Acesse a plataforma Uniquest para ver os detalhes completos.
+Veja os detalhes completos em: <%= @correction_url %>
+
+Ou acesse a plataforma Uniquest: <%= @frontend_url %>
 
 Continue estudando! Use este feedback para melhorar seu desempenho nas próximas tentativas.
 

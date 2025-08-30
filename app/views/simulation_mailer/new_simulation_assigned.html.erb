@@ -119,7 +119,7 @@
 
         <div class="info-item">
           <span class="info-label">📅 Prazo:</span>
-          <span class="info-value"><%= @simulation.deadline.strftime("%d/%m/%Y às %H:%M") %></span>
+          <span class="info-value"><%= @simulation.deadline.in_time_zone("America/Sao_Paulo").strftime("%d/%m/%Y às %H:%M") %> (horário de Brasília)</span>
         </div>
 
         <% if @simulation.time_limit.present? %>
@@ -150,7 +150,7 @@
       <% end %>
 
       <div style="text-align: center;">
-        <a href="#" class="cta-button">🚀 Acessar Simulado</a>
+        <a href="<%= @simulation_url %>" class="cta-button">🚀 Acessar Simulado</a>
       </div>
 
       <p><strong>Dica:</strong> Não deixe para a última hora! Organize seu tempo e boa sorte! 🍀</p>

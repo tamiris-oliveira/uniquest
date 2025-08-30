@@ -11,7 +11,7 @@ class SimulationMailerPreview < ActionMailer::Preview
     simulation = Simulation.first || Simulation.new(
       title: "Simulado de Matemática - Álgebra Linear",
       description: "Simulado focado em conceitos básicos de álgebra linear, incluindo matrizes, determinantes e sistemas lineares.",
-      deadline: 1.week.from_now,
+      deadline: 1.week.from_now.in_time_zone("America/Sao_Paulo"),
       time_limit: 120,
       max_attempts: 3
     )

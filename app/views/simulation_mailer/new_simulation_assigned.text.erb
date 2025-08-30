@@ -11,7 +11,7 @@ DESCRIÇÃO: <%= @simulation.description %>
 <% end %>
 
 DETALHES:
-- Prazo: <%= @simulation.deadline.strftime("%d/%m/%Y às %H:%M") %>
+- Prazo: <%= @simulation.deadline.in_time_zone("America/Sao_Paulo").strftime("%d/%m/%Y às %H:%M") %> (horário de Brasília)
 <% if @simulation.time_limit.present? %>
 - Tempo Limite: <%= @simulation.time_limit %> minutos
 <% end %>
@@ -24,7 +24,9 @@ GRUPOS PARTICIPANTES:
 <% end %>
 <% end %>
 
-Acesse a plataforma Uniquest para realizar o simulado.
+Acesse o simulado em: <%= @simulation_url %>
+
+Ou acesse a plataforma Uniquest: <%= @frontend_url %>
 
 Dica: Não deixe para a última hora! Organize seu tempo e boa sorte!
 
