@@ -13,10 +13,25 @@ class SimulationsController < ApplicationController
              group_ids: user_group_ids)
       .distinct
   
-    params.each do |key, value|
-      if Simulation.column_names.include?(key) && value.present?
-        simulations = simulations.where("simulations.#{key} LIKE ?", "%#{value}%")
-      end
+    # Aplicar filtros específicos
+    if params[:user_id].present?
+      simulations = simulations.where(user_id: params[:user_id])
+    end
+    
+    if params[:title].present?
+      simulations = simulations.where("simulations.title LIKE ?", "%#{params[:title]}%")
+    end
+    
+    if params[:description].present?
+      simulations = simulations.where("simulations.description LIKE ?", "%#{params[:description]}%")
+    end
+    
+    if params[:time_limit].present?
+      simulations = simulations.where(time_limit: params[:time_limit])
+    end
+    
+    if params[:max_attempts].present?
+      simulations = simulations.where(max_attempts: params[:max_attempts])
     end
   
     render json: simulations.map { |sim| simulation_json(sim) }

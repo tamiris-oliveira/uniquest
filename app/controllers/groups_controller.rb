@@ -14,10 +14,16 @@ class GroupsController < ApplicationController
     end
 
     # Aplicar filtros adicionais
-    params.each do |key, value|
-      if Group.column_names.include?(key) && value.present?
-        groups = groups.where("groups.#{key} LIKE ?", "%#{value}%")
-      end
+    if params[:creator_id].present?
+      groups = groups.where(creator_id: params[:creator_id])
+    end
+    
+    if params[:name].present?
+      groups = groups.where("groups.name LIKE ?", "%#{params[:name]}%")
+    end
+    
+    if params[:invite_code].present?
+      groups = groups.where(invite_code: params[:invite_code])
     end
 
     # Incluir informações dos usuários com seus cursos
