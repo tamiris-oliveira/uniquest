@@ -9,14 +9,12 @@ Rails.application.config.middleware.insert_before 0, Rack::Cors do
         "http://127.0.0.1:3001"
       ]
     else
-      # Em produção, permite o frontend Vercel e outros domínios necessários
+      # Em produção, permite apenas domínios específicos do Vercel
       origins [
         "https://uniquest-two.vercel.app",
         "https://uniquest-c8sk8xn99-tamiris73s-projects.vercel.app",
-        "https://uniquest-tamiris73s-projects.vercel.app",
-        /https:\/\/uniquest-.*\.vercel\.app/,  # Permite qualquer deploy do Vercel
-        ENV["FRONTEND_URL"]
-      ].compact
+        "https://uniquest-tamiris73s-projects.vercel.app"
+      ]
     end
 
     resource "*",
