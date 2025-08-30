@@ -1,5 +1,6 @@
 class UsersController < ApplicationController
   before_action :authenticate_request!, only: %i[show update destroy index]
+  before_action :authenticate_for_elevated_roles, only: [:create]
 
   def index
     users = User.includes(:course)
@@ -23,16 +24,28 @@ class UsersController < ApplicationController
   end
 
   def create
-    # Restringir criação de professores e admins
-    if user_params[:role].to_i > 0 # teacher ou admin
-      render json: { 
-        error: "Não é possível criar contas de professor ou administrador diretamente",
-        message: "Para se tornar professor, registre-se como aluno e solicite upgrade da conta"
-      }, status: :forbidden
-      return
+    requested_role = user_params[:role].to_i
+    
+    # Verificar permissões para criação de contas com roles elevados
+    if requested_role > 0 # teacher, admin ou super_admin
+      # Se chegou até aqui, @current_user já foi autenticado pelo before_action
+      
+      # Super Admin pode criar Admins (role 2) e outros Super Admins (role 3)
+      if (requested_role == 2 || requested_role == 3) && @current_user.super_admin?
+        # Permitido: Super Admin criando Admin ou Super Admin
+      else
+        # Bloquear outras tentativas (incluindo teachers e outros casos)
+        render json: { 
+          error: "Você não tem permissão para criar contas com este nível de acesso",
+          message: "Para se tornar professor, registre-se como aluno e solicite upgrade da conta"
+        }, status: :forbidden
+        return
+      end
     end
     
-    user = User.new(user_params.merge(role: 0)) # Força role como student
+    # Se chegou até aqui, pode criar com o role solicitado (ou 0 se não especificado)
+    final_role = requested_role > 0 ? requested_role : 0
+    user = User.new(user_params.merge(role: final_role))
     if user.save
       render json: user_with_course_json(user), status: :created
     else
@@ -61,6 +74,13 @@ class UsersController < ApplicationController
   end
 
   private
+  
+  def authenticate_for_elevated_roles
+    # Só autentica se estiver tentando criar conta com role > 0
+    if params[:user] && params[:user][:role].to_i > 0
+      authenticate_request!
+    end
+  end
 
   def user_params
     params.require(:user).permit(:name, :email, :password, :password_confirmation, :role, :avatar, :course_id)
