@@ -3,29 +3,35 @@ class QuestionsController < ApplicationController
   before_action :set_question, only: [ :show, :update, :destroy ]
 
   def index
-    # Filtrar questões baseado no curso do usuário atual
-    if @current_user.course_id.present?
-      @questions = Question.includes(:alternatives, user: :course)
-                          .joins(:user)
-                          .where(users: { course_id: @current_user.course_id })
-    else
-      @questions = Question.includes(:alternatives, user: :course).all
+    begin
+      # Filtrar questões baseado no curso do usuário atual
+      if @current_user&.course_id.present?
+        @questions = Question.includes(:alternatives, user: :course)
+                            .joins(:user)
+                            .where(users: { course_id: @current_user.course_id })
+      else
+        @questions = Question.includes(:alternatives, user: :course).all
+      end
+      
+      # Aplicar filtros adicionais
+      if params[:subject_id].present?
+        @questions = @questions.where(subject_id: params[:subject_id])
+      end
+      
+      if params[:question_type].present?
+        @questions = @questions.where(question_type: params[:question_type])
+      end
+      
+      if params[:search].present?
+        @questions = @questions.where('statement ILIKE ?', "%#{params[:search]}%")
+      end
+      
+      render json: @questions.map { |question| question_with_user_json(question) }
+    rescue => e
+      Rails.logger.error "Erro no QuestionsController#index: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      render json: { error: "Erro interno do servidor", details: e.message }, status: :internal_server_error
     end
-    
-    # Aplicar filtros adicionais
-    if params[:subject_id].present?
-      @questions = @questions.where(subject_id: params[:subject_id])
-    end
-    
-    if params[:question_type].present?
-      @questions = @questions.where(question_type: params[:question_type])
-    end
-    
-    if params[:search].present?
-      @questions = @questions.where('statement ILIKE ?', "%#{params[:search]}%")
-    end
-    
-    render json: @questions.map { |question| question_with_user_json(question) }
   end
 
   def create

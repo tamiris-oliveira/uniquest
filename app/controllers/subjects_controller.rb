@@ -3,8 +3,14 @@ class SubjectsController < ApplicationController
   before_action :set_subject, only: [ :show, :destroy ]
 
   def index
-    @subjects = Subject.all.order(:name)
-    render json: subjects_json(@subjects)
+    begin
+      @subjects = Subject.all.order(:name)
+      render json: subjects_json(@subjects)
+    rescue => e
+      Rails.logger.error "Erro no SubjectsController#index: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      render json: { error: "Erro interno do servidor", details: e.message }, status: :internal_server_error
+    end
   end
 
   def show
