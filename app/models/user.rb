@@ -140,7 +140,9 @@ class User < ApplicationRecord
   end
   
   def admin_email_domain
-    if admin? && !email.ends_with?('@admin.uniquest.com')
+    # Apenas Admins normais (role 2) precisam do domínio específico
+    # Super Admins (role 3) podem usar qualquer email
+    if admin? && !super_admin? && !email.ends_with?('@admin.uniquest.com')
       errors.add(:email, 'Administradores devem usar email @admin.uniquest.com')
     end
   end
