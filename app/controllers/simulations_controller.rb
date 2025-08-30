@@ -148,23 +148,43 @@ class SimulationsController < ApplicationController
                     .where(user: @current_user)
                     .includes(attempts: { user: {}, answers: [:question, :corrections] })
 
-      render json: simulations.as_json(
-        include: {
-          attempts: {
-            include: {
-              user: { only: [:id, :name] },
-              answers: {
-                include: {
-                  question: { only: [:id, :statement, :question_type] },
-                  corrections: { only: [:id, :grade, :feedback, :user_id] }
+      render json: simulations.map do |simulation|
+        {
+          id: simulation.id.to_s,
+          title: simulation.title,
+          attempts: simulation.attempts.map do |attempt|
+            {
+              id: attempt.id.to_s,
+              attempt_date: attempt.attempt_date,
+              final_grade: attempt.final_grade,
+              user: {
+                id: attempt.user.id.to_s,
+                name: attempt.user.name
+              },
+              answers: attempt.answers.map do |answer|
+                {
+                  id: answer.id.to_s,
+                  student_answer: answer.student_answer,
+                  correct: answer.correct,
+                  question: {
+                    id: answer.question.id.to_s,
+                    statement: answer.question.statement,
+                    question_type: answer.question.question_type
+                  },
+                  corrections: answer.corrections.map do |correction|
+                    {
+                      id: correction.id.to_s,
+                      grade: correction.grade,
+                      feedback: correction.feedback,
+                      user_id: correction.user_id.to_s
+                    }
+                  end
                 }
-              }
-            },
-            only: [:id, :attempt_date, :final_grade]
-          }
-        },
-        only: [:id, :title]
-      )
+              end
+            }
+          end
+        }
+      end
 
     else
       # Usuário comum: pegar todas as tentativas dele, com simulados e respostas
@@ -178,22 +198,38 @@ class SimulationsController < ApplicationController
       # Construir JSON customizado
       result = grouped.map do |simulation, attempts|
         {
-          id: simulation.id,
+          id: simulation.id.to_s,
           title: simulation.title,
           attempts: attempts.map do |attempt|
             {
-              id: attempt.id,
+              id: attempt.id.to_s,
               attempt_date: attempt.attempt_date,
+              final_grade: attempt.final_grade,
               user: {
-                id: @current_user.id,
+                id: @current_user.id.to_s,
                 name: @current_user.name
               },
-              answers: attempt.answers.as_json(
-                include: {
-                  question: { only: [:id, :statement, :question_type] },
-                  corrections: { only: [:id, :grade, :feedback, :user_id] }
+              answers: attempt.answers.map do |answer|
+                {
+                  id: answer.id.to_s,
+                  student_answer: answer.student_answer,
+                  correct: answer.correct,
+                  question: {
+                    id: answer.question.id.to_s,
+                    statement: answer.question.statement,
+                    question_type: answer.question.question_type
+                  },
+                  corrections: answer.corrections.map do |correction|
+                    {
+                      id: correction.id.to_s,
+                      grade: correction.grade,
+                      feedback: correction.feedback,
+                      user_id: correction.user_id.to_s,
+                      correction_date: correction.correction_date
+                    }
+                  end
                 }
-              )
+              end
             }
           end
         }

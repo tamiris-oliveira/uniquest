@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+
   # Health check route
   get "up" => "rails/health#show", as: :rails_health_check
   get "attempts/index"
@@ -81,4 +82,16 @@ Rails.application.routes.draw do
   end
   
   resources :users, only: [:index, :show, :create, :update, :destroy]
+  
+  # Rotas para gerenciamento de aprovações
+  resources :user_approvals, only: [:index] do
+    member do
+      post :approve
+      post :reject
+    end
+    
+    collection do
+      post :request_teacher_role
+    end
+  end
 end

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_08_29_220155) do
+ActiveRecord::Schema[8.0].define(version: 2025_08_30_222805) do
   create_schema "crdb_internal"
 
   # Custom types defined in this database.
@@ -168,6 +168,11 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_29_220155) do
     t.bigint "course_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.bigint "approval_status", default: 0, null: false
+    t.bigint "approved_by"
+    t.datetime "approved_at"
+    t.index ["approval_status"], name: "index_users_on_approval_status"
+    t.index ["approved_by"], name: "index_users_on_approved_by"
     t.index ["course_id"], name: "idx_users_course_id"
   end
 
@@ -191,4 +196,5 @@ ActiveRecord::Schema[8.0].define(version: 2025_08_29_220155) do
   add_foreign_key "reports", "users"
   add_foreign_key "simulations", "users"
   add_foreign_key "users", "courses", name: "fk_users_course_id"
+  add_foreign_key "users", "users", column: "approved_by", name: "fk_users_approved_by"
 end

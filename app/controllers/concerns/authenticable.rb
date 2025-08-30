@@ -8,6 +8,27 @@ module Authenticable
           render json: { error: "User not found" }, status: :unauthorized
           return
         end
+        
+        # Verificar se o usuário pode acessar o sistema
+        unless @current_user.can_access_system?
+          status_message = case @current_user.approval_status
+          when 'pending'
+            'Sua conta está aguardando aprovação de um administrador'
+          when 'rejected'
+            'Sua conta foi rejeitada. Entre em contato com o suporte'
+          when 'suspended'
+            'Sua conta foi suspensa. Entre em contato com o suporte'
+          else
+            'Acesso negado'
+          end
+          
+          render json: { 
+            error: "Access denied", 
+            message: status_message,
+            approval_status: @current_user.approval_status 
+          }, status: :forbidden
+          return
+        end
       else
         render json: { error: "Not Authorized" }, status: :unauthorized
         return

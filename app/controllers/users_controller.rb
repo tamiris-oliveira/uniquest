@@ -23,9 +23,18 @@ class UsersController < ApplicationController
   end
 
   def create
-    user = User.new(user_params)
+    # Restringir criação de professores e admins
+    if user_params[:role].to_i > 0 # teacher ou admin
+      render json: { 
+        error: "Não é possível criar contas de professor ou administrador diretamente",
+        message: "Para se tornar professor, registre-se como aluno e solicite upgrade da conta"
+      }, status: :forbidden
+      return
+    end
+    
+    user = User.new(user_params.merge(role: 0)) # Força role como student
     if user.save
-      render json: user, status: :created
+      render json: user_with_course_json(user), status: :created
     else
       render json: { errors: user.errors.full_messages }, status: :unprocessable_entity
     end
