@@ -1,8 +1,13 @@
 Rails.application.config.middleware.insert_before 0, Rack::Cors do
   allow do
-    # Em desenvolvimento, permite qualquer origem
     if Rails.env.development?
-      origins "*"
+      # Em desenvolvimento, permite localhost
+      origins [
+        "http://localhost:3000",
+        "http://localhost:3001", 
+        "http://127.0.0.1:3000",
+        "http://127.0.0.1:3001"
+      ]
     else
       # Em produção, permite o frontend Vercel e outros domínios necessários
       origins [
