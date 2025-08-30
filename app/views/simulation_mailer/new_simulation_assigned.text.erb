@@ -1,0 +1,33 @@
+UNIQUEST - Novo Simulado Disponível
+=====================================
+
+Olá, <%= @user.name %>!
+
+Um novo simulado foi criado e está disponível para você:
+
+SIMULADO: <%= @simulation.title %>
+<% if @simulation.description.present? %>
+DESCRIÇÃO: <%= @simulation.description %>
+<% end %>
+
+DETALHES:
+- Prazo: <%= @simulation.deadline.strftime("%d/%m/%Y às %H:%M") %>
+<% if @simulation.time_limit.present? %>
+- Tempo Limite: <%= @simulation.time_limit %> minutos
+<% end %>
+- Tentativas Máximas: <%= @simulation.max_attempts %>
+
+<% if @groups.any? %>
+GRUPOS PARTICIPANTES:
+<% @groups.each do |group| %>
+- <%= group.name %><% if group.invite_code.present? %> (Código: <%= group.invite_code %>)<% end %>
+<% end %>
+<% end %>
+
+Acesse a plataforma Uniquest para realizar o simulado.
+
+Dica: Não deixe para a última hora! Organize seu tempo e boa sorte!
+
+---
+Este é um email automático do sistema Uniquest.
+Se você não deveria ter recebido este email, entre em contato conosco.

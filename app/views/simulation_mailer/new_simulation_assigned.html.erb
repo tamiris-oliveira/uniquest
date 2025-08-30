@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novo Simulado Disponível</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      text-align: center;
+      border-bottom: 3px solid #007bff;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      color: #007bff;
+      margin: 0;
+      font-size: 28px;
+    }
+    .content {
+      margin-bottom: 30px;
+    }
+    .simulation-info {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #007bff;
+      margin: 20px 0;
+    }
+    .simulation-info h3 {
+      margin-top: 0;
+      color: #007bff;
+    }
+    .info-item {
+      margin: 10px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+    .info-label {
+      font-weight: bold;
+      color: #555;
+    }
+    .info-value {
+      color: #333;
+    }
+    .groups-list {
+      background-color: #e3f2fd;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+    }
+    .groups-list h4 {
+      margin-top: 0;
+      color: #1976d2;
+    }
+    .group-item {
+      background-color: white;
+      padding: 8px 12px;
+      margin: 5px 0;
+      border-radius: 4px;
+      border-left: 3px solid #2196f3;
+    }
+    .cta-button {
+      display: inline-block;
+      background-color: #007bff;
+      color: white;
+      padding: 12px 30px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .cta-button:hover {
+      background-color: #0056b3;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>📚 Uniquest</h1>
+      <p>Novo Simulado Disponível</p>
+    </div>
+
+    <div class="content">
+      <p>Olá, <strong><%= @user.name %></strong>!</p>
+      
+      <p>Um novo simulado foi criado e está disponível para você. Confira os detalhes abaixo:</p>
+
+      <div class="simulation-info">
+        <h3>📋 <%= @simulation.title %></h3>
+        
+        <% if @simulation.description.present? %>
+          <p><%= @simulation.description %></p>
+        <% end %>
+
+        <div class="info-item">
+          <span class="info-label">📅 Prazo:</span>
+          <span class="info-value"><%= @simulation.deadline.strftime("%d/%m/%Y às %H:%M") %></span>
+        </div>
+
+        <% if @simulation.time_limit.present? %>
+          <div class="info-item">
+            <span class="info-label">⏱️ Tempo Limite:</span>
+            <span class="info-value"><%= @simulation.time_limit %> minutos</span>
+          </div>
+        <% end %>
+
+        <div class="info-item">
+          <span class="info-label">🔄 Tentativas Máximas:</span>
+          <span class="info-value"><%= @simulation.max_attempts %></span>
+        </div>
+      </div>
+
+      <% if @groups.any? %>
+        <div class="groups-list">
+          <h4>👥 Grupos Participantes:</h4>
+          <% @groups.each do |group| %>
+            <div class="group-item">
+              <strong><%= group.name %></strong>
+              <% if group.invite_code.present? %>
+                <span style="color: #666; font-size: 12px;">(Código: <%= group.invite_code %>)</span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <div style="text-align: center;">
+        <a href="#" class="cta-button">🚀 Acessar Simulado</a>
+      </div>
+
+      <p><strong>Dica:</strong> Não deixe para a última hora! Organize seu tempo e boa sorte! 🍀</p>
+    </div>
+
+    <div class="footer">
+      <p>Este é um email automático do sistema Uniquest.</p>
+      <p>Se você não deveria ter recebido este email, entre em contato conosco.</p>
+    </div>
+  </div>
+</body>
+</html>

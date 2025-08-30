@@ -68,6 +68,12 @@ class SimulationsController < ApplicationController
   def assign_groups
     groups = Group.where(id: params[:group_ids])
     @simulation.groups = groups
+    
+    # Enviar notificações por email para os novos grupos
+    if groups.any?
+      SimulationNotificationJob.perform_later(@simulation.id)
+    end
+    
     render json: { message: "Grupos atualizados com sucesso." }, status: :ok
   end
 
@@ -88,6 +94,12 @@ class SimulationsController < ApplicationController
       if simulation_params[:question_ids].present?
         simulation.questions = Question.where(id: simulation_params[:question_ids])
       end
+      
+      # Enviar notificações por email se há grupos associados
+      if simulation.groups.any?
+        SimulationNotificationJob.perform_later(simulation.id)
+      end
+      
       render_simulation(simulation, status: :created)
     else
       render json: { errors: simulation.errors.full_messages }, status: :unprocessable_entity

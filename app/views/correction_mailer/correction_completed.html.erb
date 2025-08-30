@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Correção Disponível</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #f4f4f4;
+    }
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    .header {
+      text-align: center;
+      border-bottom: 3px solid #28a745;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      color: #28a745;
+      margin: 0;
+      font-size: 28px;
+    }
+    .content {
+      margin-bottom: 30px;
+    }
+    .correction-info {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      border-left: 4px solid #28a745;
+      margin: 20px 0;
+    }
+    .correction-info h3 {
+      margin-top: 0;
+      color: #28a745;
+    }
+    .grade-display {
+      text-align: center;
+      background-color: #e8f5e8;
+      padding: 20px;
+      border-radius: 10px;
+      margin: 20px 0;
+      border: 2px solid #28a745;
+    }
+    .grade-number {
+      font-size: 48px;
+      font-weight: bold;
+      color: #28a745;
+      margin: 0;
+    }
+    .grade-label {
+      color: #666;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+    .question-info {
+      background-color: #f1f3f4;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 3px solid #6c757d;
+    }
+    .question-info h4 {
+      margin-top: 0;
+      color: #495057;
+    }
+    .answer-section {
+      background-color: #fff3cd;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 3px solid #ffc107;
+    }
+    .feedback-section {
+      background-color: #d1ecf1;
+      padding: 15px;
+      border-radius: 8px;
+      margin: 15px 0;
+      border-left: 3px solid #17a2b8;
+    }
+    .feedback-section h4 {
+      margin-top: 0;
+      color: #0c5460;
+    }
+    .info-item {
+      margin: 10px 0;
+      display: flex;
+      justify-content: space-between;
+    }
+    .info-label {
+      font-weight: bold;
+      color: #555;
+    }
+    .info-value {
+      color: #333;
+    }
+    .cta-button {
+      display: inline-block;
+      background-color: #28a745;
+      color: white;
+      padding: 12px 30px;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      text-align: center;
+      margin: 20px 0;
+    }
+    .cta-button:hover {
+      background-color: #218838;
+    }
+    .footer {
+      text-align: center;
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #eee;
+      color: #666;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>✅ Uniquest</h1>
+      <p>Correção Disponível</p>
+    </div>
+
+    <div class="content">
+      <p>Olá, <strong><%= @user.name %></strong>!</p>
+      
+      <p>A correção de uma das suas respostas está disponível. Confira os detalhes abaixo:</p>
+
+      <div class="correction-info">
+        <h3>📋 <%= @simulation.title %></h3>
+        
+        <div class="info-item">
+          <span class="info-label">📅 Data da Tentativa:</span>
+          <span class="info-value"><%= @attempt.attempt_date.strftime("%d/%m/%Y às %H:%M") %></span>
+        </div>
+
+        <div class="info-item">
+          <span class="info-label">📝 Data da Correção:</span>
+          <span class="info-value"><%= @correction.correction_date.strftime("%d/%m/%Y às %H:%M") %></span>
+        </div>
+      </div>
+
+      <% if @correction.grade.present? %>
+        <div class="grade-display">
+          <div class="grade-number"><%= @correction.grade.to_f.round(1) %></div>
+          <div class="grade-label">NOTA OBTIDA</div>
+        </div>
+      <% end %>
+
+      <div class="question-info">
+        <h4>❓ Questão</h4>
+        <p><%= truncate(@question.statement, length: 200) %></p>
+        <% if @question.statement.length > 200 %>
+          <p><em>... (questão completa disponível na plataforma)</em></p>
+        <% end %>
+      </div>
+
+      <div class="answer-section">
+        <h4>📝 Sua Resposta</h4>
+        <p><%= @answer.student_answer %></p>
+        
+        <% if @answer.correct.present? %>
+          <p>
+            <strong>Status:</strong> 
+            <span style="color: <%= @answer.correct? ? '#28a745' : '#dc3545' %>;">
+              <%= @answer.correct? ? '✅ Correta' : '❌ Incorreta' %>
+            </span>
+          </p>
+        <% end %>
+      </div>
+
+      <% if @correction.feedback.present? %>
+        <div class="feedback-section">
+          <h4>💬 Feedback do Professor</h4>
+          <p><%= @correction.feedback %></p>
+        </div>
+      <% end %>
+
+      <div style="text-align: center;">
+        <a href="#" class="cta-button">📊 Ver Detalhes Completos</a>
+      </div>
+
+      <p><strong>Continue estudando!</strong> Use este feedback para melhorar seu desempenho nas próximas tentativas. 📚</p>
+    </div>
+
+    <div class="footer">
+      <p>Este é um email automático do sistema Uniquest.</p>
+      <p>Se você não deveria ter recebido este email, entre em contato conosco.</p>
+    </div>
+  </div>
+</body>
+</html>

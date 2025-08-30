@@ -9,10 +9,17 @@ class CorrectionsController < ApplicationController
   end
 
   def create
-    @correction = @answer.corrections.build(correction_params.merge(user_id: @current_user.id))
+    @correction = @answer.corrections.build(correction_params.merge(
+      user_id: @current_user.id,
+      correction_date: Time.current
+    ))
 
     if @correction.save
       update_attempt_final_grade(@answer.attempt)
+      
+      # Enviar notificação por email para o estudante
+      CorrectionNotificationJob.perform_later(@correction.id)
+      
       render json: correction_json(@correction), status: :created, location: correction_url(@correction)
     else
       render json: @correction.errors, status: :unprocessable_entity
@@ -24,8 +31,12 @@ class CorrectionsController < ApplicationController
   end
 
   def update
-    if @correction.update(correction_params)
+    if @correction.update(correction_params.merge(correction_date: Time.current))
       update_attempt_final_grade(@correction.answer.attempt)
+      
+      # Enviar notificação por email para o estudante sobre a atualização
+      CorrectionNotificationJob.perform_later(@correction.id)
+      
       render json: correction_json(@correction)
     else
       render json: @correction.errors, status: :unprocessable_entity

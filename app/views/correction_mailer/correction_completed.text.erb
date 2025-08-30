@@ -1,0 +1,41 @@
+UNIQUEST - Correção Disponível
+===============================
+
+Olá, <%= @user.name %>!
+
+A correção de uma das suas respostas está disponível:
+
+SIMULADO: <%= @simulation.title %>
+
+DETALHES DA CORREÇÃO:
+- Data da Tentativa: <%= @attempt.attempt_date.strftime("%d/%m/%Y às %H:%M") %>
+- Data da Correção: <%= @correction.correction_date.strftime("%d/%m/%Y às %H:%M") %>
+<% if @correction.grade.present? %>
+- Nota Obtida: <%= @correction.grade.to_f.round(1) %>
+<% end %>
+
+QUESTÃO:
+<%= truncate(@question.statement, length: 300) %>
+<% if @question.statement.length > 300 %>
+... (questão completa disponível na plataforma)
+<% end %>
+
+SUA RESPOSTA:
+<%= @answer.student_answer %>
+
+<% if @answer.correct.present? %>
+STATUS: <%= @answer.correct? ? 'CORRETA' : 'INCORRETA' %>
+<% end %>
+
+<% if @correction.feedback.present? %>
+FEEDBACK DO PROFESSOR:
+<%= @correction.feedback %>
+<% end %>
+
+Acesse a plataforma Uniquest para ver os detalhes completos.
+
+Continue estudando! Use este feedback para melhorar seu desempenho nas próximas tentativas.
+
+---
+Este é um email automático do sistema Uniquest.
+Se você não deveria ter recebido este email, entre em contato conosco.
