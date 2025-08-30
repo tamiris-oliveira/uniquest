@@ -71,7 +71,12 @@ class SimulationsController < ApplicationController
     
     # Enviar notificações por email para os novos grupos
     if groups.any?
-      SimulationNotificationJob.perform_later(@simulation.id)
+      begin
+        SimulationNotificationJob.perform_later(@simulation.id)
+      rescue => e
+        Rails.logger.error "Erro ao enfileirar job de notificação: #{e.message}"
+        # Não falha a atribuição de grupos se o job falhar
+      end
     end
     
     render json: { message: "Grupos atualizados com sucesso." }, status: :ok
@@ -97,7 +102,12 @@ class SimulationsController < ApplicationController
       
       # Enviar notificações por email se há grupos associados
       if simulation.groups.any?
-        SimulationNotificationJob.perform_later(simulation.id)
+        begin
+          SimulationNotificationJob.perform_later(simulation.id)
+        rescue => e
+          Rails.logger.error "Erro ao enfileirar job de notificação: #{e.message}"
+          # Não falha a criação do simulado se o job falhar
+        end
       end
       
       render_simulation(simulation, status: :created)

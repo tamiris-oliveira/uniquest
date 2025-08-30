@@ -49,9 +49,9 @@ Rails.application.configure do
   # Replace the default in-process memory cache store with a durable alternative.
   config.cache_store = :solid_cache_store
 
-  # Replace the default in-process and non-durable queuing backend for Active Job.
-  config.active_job.queue_adapter = :solid_queue
-  config.solid_queue.connects_to = { database: { writing: :queue } }
+  # Use inline adapter for now (emails sent synchronously)
+  # TODO: Configure proper queue system (Sidekiq, Solid Queue, etc.) for production
+  config.active_job.queue_adapter = :inline
 
   # Configure mailer for production
   config.action_mailer.raise_delivery_errors = true

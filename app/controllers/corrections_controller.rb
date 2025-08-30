@@ -18,7 +18,12 @@ class CorrectionsController < ApplicationController
       update_attempt_final_grade(@answer.attempt)
       
       # Enviar notificação por email para o estudante
-      CorrectionNotificationJob.perform_later(@correction.id)
+      begin
+        CorrectionNotificationJob.perform_later(@correction.id)
+      rescue => e
+        Rails.logger.error "Erro ao enfileirar job de correção: #{e.message}"
+        # Não falha a criação da correção se o job falhar
+      end
       
       render json: correction_json(@correction), status: :created, location: correction_url(@correction)
     else
@@ -35,7 +40,12 @@ class CorrectionsController < ApplicationController
       update_attempt_final_grade(@correction.answer.attempt)
       
       # Enviar notificação por email para o estudante sobre a atualização
-      CorrectionNotificationJob.perform_later(@correction.id)
+      begin
+        CorrectionNotificationJob.perform_later(@correction.id)
+      rescue => e
+        Rails.logger.error "Erro ao enfileirar job de correção: #{e.message}"
+        # Não falha a atualização da correção se o job falhar
+      end
       
       render json: correction_json(@correction)
     else
