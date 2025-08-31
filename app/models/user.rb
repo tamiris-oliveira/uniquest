@@ -29,7 +29,7 @@ class User < ApplicationRecord
   
   # Validações customizadas
   validate :teacher_requires_approval
-  validate :admin_email_domain
+
   
   # Callbacks
   before_validation :set_default_approval_status, on: :create
@@ -139,13 +139,7 @@ class User < ApplicationRecord
     end
   end
   
-  def admin_email_domain
-    # Apenas Admins normais (role 2) precisam do domínio específico
-    # Super Admins (role 3) podem usar qualquer email
-    if admin? && !super_admin? && !email.ends_with?('@admin.uniquest.com')
-      errors.add(:email, 'Administradores devem usar email @admin.uniquest.com')
-    end
-  end
+
   
   def send_approval_notification
     if teacher?
