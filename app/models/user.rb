@@ -125,6 +125,9 @@ class User < ApplicationRecord
   private
   
   def set_default_approval_status
+    # Só define o status se ainda não foi definido
+    return if approval_status.present?
+    
     if student?
       self.approval_status = :approved  # Alunos são aprovados automaticamente
     elsif teacher?
