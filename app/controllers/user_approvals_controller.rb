@@ -45,22 +45,25 @@ class UserApprovalsController < ApplicationController
     end
     
     begin
-      @user.approve!(@current_user)
-      
-      # Notificar o usuário sobre aprovação
-      role_name = case @user.role
-      when 1 then 'professor'
-      when 2 then 'administrador'
-      when 3 then 'super administrador'
-      else 'usuário'
+      # Atualizar role se fornecido
+      if params[:role].present?
+        new_role = params[:role].to_i
+        if [0, 1, 2, 3].include?(new_role)
+          @user.role = new_role
+        else
+          render json: { error: "Role inválido. Deve ser 0, 1, 2 ou 3" }, status: :unprocessable_entity
+          return
+        end
       end
       
-      Notification.create!(
-        user: @user,
-        message: "Sua conta foi aprovada! Agora você pode acessar o sistema como #{role_name}.",
-        viewed: false,
-        send_date: Time.current
-      )
+      @user.approve!(@current_user)
+      
+      # Enfileirar job para notificação de aprovação (email + notificação)
+      begin
+        ApprovalNotificationJob.perform_later(@user.id, 'approved')
+      rescue => e
+        Rails.logger.error "Erro ao enfileirar job de aprovação: #{e.message}"
+      end
       
       render json: { 
         message: "Usuário aprovado com sucesso",
@@ -77,13 +80,13 @@ class UserApprovalsController < ApplicationController
     begin
       @user.reject!(@current_user)
       
-      # Notificar o usuário sobre rejeição
-      Notification.create!(
-        user: @user,
-        message: "Sua solicitação para se tornar #{@user.teacher? ? 'professor' : 'administrador'} foi rejeitada. Entre em contato com o suporte para mais informações.",
-        viewed: false,
-        send_date: Time.current
-      )
+      # Enfileirar job para notificação de rejeição (email + notificação)
+      reason = params[:reason] || "Não especificado"
+      begin
+        ApprovalNotificationJob.perform_later(@user.id, 'rejected', reason)
+      rescue => e
+        Rails.logger.error "Erro ao enfileirar job de rejeição: #{e.message}"
+      end
       
       render json: { 
         message: "Usuário rejeitado",

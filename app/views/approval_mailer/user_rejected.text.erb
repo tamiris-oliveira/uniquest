@@ -1,0 +1,39 @@
+SOLICITAÇÃO NÃO APROVADA - UNIQUEST
+===================================
+
+Olá, <%= @user.name %>!
+
+Informamos que sua solicitação de conta <%= @account_type %> não foi aprovada neste momento.
+
+DETALHES DA SOLICITAÇÃO:
+------------------------
+📧 Email: <%= @user.email %>
+👤 Tipo de Conta Solicitada: <%= @account_type %>
+<% if @user.course %>🎓 Curso: <%= @user.course.name %>
+<% end %>📅 Processado em: <%= @user.approved_at.in_time_zone("America/Sao_Paulo").strftime("%d/%m/%Y às %H:%M") %> (horário de Brasília)
+<% if @approver %>👨‍💼 Processado por: <%= @approver.name %>
+<% end %>
+
+<% if @reason.present? %>MOTIVO:
+-------
+<%= @reason %>
+
+<% end %>O QUE VOCÊ PODE FAZER:
+---------------------
+1. Entre em contato com nossa equipe para esclarecimentos
+2. Verifique se todas as informações fornecidas estão corretas
+3. Considere se registrar como aluno e solicitar upgrade posteriormente
+4. Aguarde orientações adicionais da administração
+
+CONTATO:
+--------
+📞 Suporte: <%= @contact_url %>
+🌐 Plataforma: <%= @frontend_url %>
+❓ Ajuda: <%= @frontend_url %>/ajuda
+
+---
+Este é um email automático, não responda a esta mensagem.
+Para esclarecimentos, utilize nossos canais oficiais de contato.
+
+Uniquest - Plataforma de Simulados Educacionais
+© <%= Date.current.year %> Todos os direitos reservados.

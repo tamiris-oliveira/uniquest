@@ -1,0 +1,39 @@
+CONTA APROVADA - UNIQUEST
+========================
+
+Olá, <%= @user.name %>!
+
+Temos uma excelente notícia! Sua solicitação de conta <%= @account_type %> foi aprovada e você já pode acessar a plataforma Uniquest.
+
+DETALHES DA CONTA:
+------------------
+📧 Email: <%= @user.email %>
+👤 Tipo de Conta: <%= @account_type %>
+<% if @user.course %>🎓 Curso: <%= @user.course.name %>
+<% end %>✅ Aprovado em: <%= @user.approved_at.in_time_zone("America/Sao_Paulo").strftime("%d/%m/%Y às %H:%M") %> (horário de Brasília)
+<% if @approver %>👨‍💼 Aprovado por: <%= @approver.name %>
+<% end %>
+
+PRÓXIMOS PASSOS:
+----------------
+1. Acesse: <%= @login_url %>
+2. Faça login com seu email e senha
+3. Complete seu perfil se necessário
+4. Explore as funcionalidades disponíveis
+<% if @user.teacher? %>5. Comece a criar simulados para seus alunos
+<% elsif @user.admin? %>5. Gerencie usuários e configurações do sistema
+<% end %>
+
+ACESSO RÁPIDO:
+--------------
+🚀 Login: <%= @login_url %>
+🌐 Plataforma: <%= @frontend_url %>
+❓ Ajuda: <%= @frontend_url %>/ajuda
+📞 Contato: <%= @frontend_url %>/contato
+
+---
+Este é um email automático, não responda a esta mensagem.
+Se você tiver dúvidas, entre em contato com nossa equipe de suporte.
+
+Uniquest - Plataforma de Simulados Educacionais
+© <%= Date.current.year %> Todos os direitos reservados.
