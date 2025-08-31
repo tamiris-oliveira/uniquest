@@ -71,7 +71,10 @@ class User < ApplicationRecord
   end
   
   def can_access_system?
-    student? || (teacher? && approved?) || (admin? && approved?) || super_admin?
+    return true if super_admin?  # Super Admins sempre têm acesso
+    return true if student?      # Alunos sempre têm acesso
+    return approved? if teacher? || admin?  # Professores e Admins precisam estar aprovados
+    false
   end
   
   def can_approve_users?

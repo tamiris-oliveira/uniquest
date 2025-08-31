@@ -45,7 +45,18 @@ class UsersController < ApplicationController
     
     # Se chegou até aqui, pode criar com o role solicitado (ou 0 se não especificado)
     final_role = requested_role > 0 ? requested_role : 0
-    user = User.new(user_params.merge(role: final_role))
+    user_attributes = user_params.merge(role: final_role)
+    
+    # Se Super Admin está criando um Admin, aprova automaticamente
+    if @current_user&.super_admin? && final_role == 2
+      user_attributes.merge!(
+        approval_status: :approved,
+        approved_by: @current_user.id,
+        approved_at: Time.current
+      )
+    end
+    
+    user = User.new(user_attributes)
     if user.save
       render json: user_with_course_json(user), status: :created
     else
