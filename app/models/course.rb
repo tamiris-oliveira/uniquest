@@ -1,8 +1,8 @@
 class Course < ApplicationRecord
   # Associations
   has_many :users, dependent: :restrict_with_error
-  has_many :groups, through: :users
-  has_many :simulations, through: :groups
+  has_many :groups, -> { distinct }, through: :users
+  has_many :simulations, -> { distinct }, through: :groups
   
   # Validations
   validates :name, presence: true, length: { minimum: 2, maximum: 100 }

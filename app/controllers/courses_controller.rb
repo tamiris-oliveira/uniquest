@@ -6,13 +6,19 @@ class CoursesController < ApplicationController
   # GET /courses
   # Lista cursos baseado no perfil do usuário
   def index
-    @courses = accessible_courses
-                    .left_joins(:users)
-                    .select('courses.*, COUNT(users.id) as users_count')
-                    .group('courses.id')
-                    .order(:name)
-    
-    render json: courses_json(@courses)
+    begin
+      Rails.logger.info "CoursesController#index - Iniciando"
+      
+      @courses = accessible_courses.includes(:users).order(:name)
+      
+      Rails.logger.info "CoursesController#index - Cursos encontrados: #{@courses.count}"
+      
+      render json: courses_json(@courses)
+    rescue => e
+      Rails.logger.error "Erro em CoursesController#index: #{e.message}"
+      Rails.logger.error e.backtrace.join("\n")
+      render json: { error: "Erro interno do servidor", details: e.message }, status: :internal_server_error
+    end
   end
 
   # GET /courses/:id
@@ -26,7 +32,7 @@ class CoursesController < ApplicationController
   # POST /courses
   # Cria um novo curso (apenas superadmin)
   def create
-    unless @current_user.role == 2 # Apenas superadmin
+    unless @current_user&.super_admin? # Apenas superadmin
       render json: { error: "Não autorizado" }, status: :forbidden
       return
     end
@@ -103,31 +109,32 @@ class CoursesController < ApplicationController
     # Se não há usuário autenticado, retorna todos os cursos (acesso público)
     return Course.all unless @current_user
     
-    case @current_user.role
-    when 2 # Superadmin - vê todos os cursos
+    if @current_user.super_admin? || @current_user.admin?
+      # Super Admin e Admin - veem todos os cursos
       Course.all
-    when 1 # Professor - vê apenas seu curso
+    elsif @current_user.teacher?
+      # Professor - vê apenas seu curso
       @current_user.course ? Course.where(id: @current_user.course_id) : Course.none
-    else # Estudante - vê apenas seu curso
+    else
+      # Estudante - vê apenas seu curso
       @current_user.course ? Course.where(id: @current_user.course_id) : Course.none
     end
   end
 
   # Verifica se o usuário pode acessar o curso específico
   def authorize_course_access!
-    case @current_user.role
-    when 2 # Superadmin - acesso total
+    if @current_user.super_admin? || @current_user.admin?
+      # Super Admin e Admin - acesso total
       return true
-    when 1 # Professor - apenas seu curso
+    elsif @current_user.teacher? || @current_user.student?
+      # Professor e Estudante - apenas seu curso
       unless @current_user.course_id == @course.id
         render json: { error: "Não autorizado" }, status: :forbidden
         return false
       end
-    else # Estudante - apenas visualização do seu curso
-      unless @current_user.course_id == @course.id
-        render json: { error: "Não autorizado" }, status: :forbidden
-        return false
-      end
+    else
+      render json: { error: "Não autorizado" }, status: :forbidden
+      return false
     end
   end
 
@@ -138,7 +145,7 @@ class CoursesController < ApplicationController
         name: course.name,
         code: course.code,
         description: course.description,
-        users_count: course.users_count || 0,
+        users_count: course.users.size,
         created_at: course.created_at
       }
     end
