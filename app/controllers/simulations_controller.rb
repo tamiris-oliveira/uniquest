@@ -157,7 +157,7 @@ class SimulationsController < ApplicationController
 
       Rails.logger.info "Found #{simulations.count} simulations for teacher"
       
-      render json: simulations.map do |simulation|
+      result = simulations.map do |simulation|
         {
           id: simulation.id.to_s,
           title: simulation.title,
@@ -194,6 +194,11 @@ class SimulationsController < ApplicationController
           end
         }
       end
+      
+      Rails.logger.info "About to render JSON with #{result.length} simulations"
+      Rails.logger.info "First simulation has #{result.first&.dig(:attempts)&.length || 0} attempts" if result.any?
+      
+      render json: result
 
     else
       Rails.logger.info "Executing ELSE branch - user is NOT a teacher"
