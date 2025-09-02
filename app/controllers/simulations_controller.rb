@@ -143,10 +143,16 @@ class SimulationsController < ApplicationController
   end
 
   def with_attempts_answers
+    Rails.logger.info "=== DEBUG with_attempts_answers ==="
+    Rails.logger.info "Current user: #{@current_user&.id} - #{@current_user&.name} - Role: #{@current_user&.role}"
+    
     if @current_user.role == 1 
       simulations = Simulation
                     .where(user: @current_user)
                     .includes(attempts: { user: {}, answers: [:question, :corrections] })
+      
+      Rails.logger.info "Simulations found: #{simulations.count}"
+      simulations.each { |s| Rails.logger.info "- #{s.title}: #{s.attempts.count} attempts" }
 
       render json: simulations.map do |simulation|
         {
@@ -187,6 +193,7 @@ class SimulationsController < ApplicationController
       end
 
     else
+      Rails.logger.info "User is NOT a teacher, executing ELSE branch"
       # Usuário comum: pegar todas as tentativas dele, com simulados e respostas
       attempts = Attempt
                  .where(user: @current_user)
