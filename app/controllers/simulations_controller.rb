@@ -3,9 +3,6 @@ class SimulationsController < ApplicationController
   before_action :set_simulation, only: %i[show update destroy groups questions assign_groups assign_questions]
 
   def index
-    Rails.logger.info "=== INDEX METHOD CALLED ==="
-    Rails.logger.info "User: #{@current_user&.name} - Role: #{@current_user&.role}"
-    
     user_group_ids = @current_user.groups.pluck(:id)
   
     simulations = Simulation
@@ -146,18 +143,12 @@ class SimulationsController < ApplicationController
   end
 
   def with_attempts_answers
-    Rails.logger.info "=== with_attempts_answers CALLED ==="
-    Rails.logger.info "Current user: #{@current_user&.id} - #{@current_user&.name} - Role: #{@current_user&.role}"
-    Rails.logger.info "Role == 1? #{@current_user&.role == 1}"
-    
     if @current_user.role == 1 
       simulations = Simulation
                     .where(user: @current_user)
                     .includes(attempts: { user: {}, answers: [:question, :corrections] })
 
-      Rails.logger.info "Found #{simulations.count} simulations for teacher"
-      
-      result = simulations.map do |simulation|
+      render json: simulations.map do |simulation|
         {
           id: simulation.id.to_s,
           title: simulation.title,
@@ -194,14 +185,8 @@ class SimulationsController < ApplicationController
           end
         }
       end
-      
-      Rails.logger.info "About to render JSON with #{result.length} simulations"
-      Rails.logger.info "First simulation has #{result.first&.dig(:attempts)&.length || 0} attempts" if result.any?
-      
-      render json: result
 
     else
-      Rails.logger.info "Executing ELSE branch - user is NOT a teacher"
       # Usuário comum: pegar todas as tentativas dele, com simulados e respostas
       attempts = Attempt
                  .where(user: @current_user)
