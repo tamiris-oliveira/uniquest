@@ -9,7 +9,5 @@ bundle exec rails assets:clean
 
 # Run database migrations
 bundle exec rails db:migrate:status
-# Force cleanup orphaned migrations first
-bundle exec rails db:migrate VERSION=20250829220608
 bundle exec rails db:migrate
 bundle exec rails db:seed
