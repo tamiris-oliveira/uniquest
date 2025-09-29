@@ -23,12 +23,8 @@ test:
 
 production:
   <<: *default
-  username: <%= ENV['DB_USERNAME'] || 'tamiris' %>
-  password: <%= ENV['DB_PASSWORD'] || 'sw9pwC5prRI1vSQr4ezvbg' %>
-  host: <%= ENV['DB_HOST'] || 'ringed-pony-16530.j77.aws-us-east-1.cockroachlabs.cloud' %>
-  port: <%= ENV['DB_PORT'] || '26257' %>
-  database: <%= ENV['DB_NAME'] || 'defaultdb' %>
-  sslmode: verify-full
+  url: <%= ENV['DATABASE_URL'] %>
+  sslmode: require
 
 # Configurações para Solid Cache, Queue e Cable
 cache:
