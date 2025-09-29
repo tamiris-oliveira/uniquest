@@ -13,10 +13,6 @@
 ActiveRecord::Schema[8.0].define(version: 2025_08_30_222805) do
   create_schema "crdb_internal"
 
-  # Custom types defined in this database.
-  # Note that some types may not work with other database engines. Be careful if changing database.
-  create_enum "crdb_internal_region", ["aws-us-east-1"]
-
   create_table "alternatives", id: :bigint, default: -> { "unique_rowid()" }, force: :cascade do |t|
     t.text "text"
     t.boolean "correct"

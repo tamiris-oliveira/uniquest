@@ -6,54 +6,54 @@ default: &default
 development:
   <<: *default
   username: tamiris
-  password: _PBPzuhMJLiJCf9PiAY8gA
-  host: wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud
+  password: sw9pwC5prRI1vSQr4ezvbg
+  host: ringed-pony-16530.j77.aws-us-east-1.cockroachlabs.cloud
   port: 26257
   database: defaultdb
-  sslmode: require
+  sslmode: verify-full
 
 test:
   <<: *default
   username: tamiris
-  password: _PBPzuhMJLiJCf9PiAY8gA
-  host: wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud
+  password: sw9pwC5prRI1vSQr4ezvbg
+  host: ringed-pony-16530.j77.aws-us-east-1.cockroachlabs.cloud
   port: 26257
   database: defaultdb
-  sslmode: require
+  sslmode: verify-full
 
 production:
   <<: *default
   username: <%= ENV['DB_USERNAME'] || 'tamiris' %>
-  password: <%= ENV['DB_PASSWORD'] || '_PBPzuhMJLiJCf9PiAY8gA' %>
-  host: <%= ENV['DB_HOST'] || 'wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud' %>
+  password: <%= ENV['DB_PASSWORD'] || 'sw9pwC5prRI1vSQr4ezvbg' %>
+  host: <%= ENV['DB_HOST'] || 'ringed-pony-16530.j77.aws-us-east-1.cockroachlabs.cloud' %>
   port: <%= ENV['DB_PORT'] || '26257' %>
   database: <%= ENV['DB_NAME'] || 'defaultdb' %>
-  sslmode: require
+  sslmode: verify-full
 
 # Configurações para Solid Cache, Queue e Cable
 cache:
   <<: *default
   username: <%= ENV['DB_USERNAME'] || 'tamiris' %>
-  password: <%= ENV['DB_PASSWORD'] || '_PBPzuhMJLiJCf9PiAY8gA' %>
-  host: <%= ENV['DB_HOST'] || 'wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud' %>
+  password: <%= ENV['DB_PASSWORD'] || 'sw9pwC5prRI1vSQr4ezvbg' %>
+  host: <%= ENV['DB_HOST'] || 'ringed-pony-16530.j77.aws-us-east-1.cockroachlabs.cloud' %>
   port: <%= ENV['DB_PORT'] || '26257' %>
   database: <%= ENV['DB_NAME'] || 'defaultdb' %>
-  sslmode: require
+  sslmode: verify-full
 
 queue:
   <<: *default
   username: <%= ENV['DB_USERNAME'] || 'tamiris' %>
-  password: <%= ENV['DB_PASSWORD'] || '_PBPzuhMJLiJCf9PiAY8gA' %>
-  host: <%= ENV['DB_HOST'] || 'wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud' %>
+  password: <%= ENV['DB_PASSWORD'] || 'sw9pwC5prRI1vSQr4ezvbg' %>
+  host: <%= ENV['DB_HOST'] || 'ringed-pony-16530.j77.aws-us-east-1.cockroachlabs.cloud' %>
   port: <%= ENV['DB_PORT'] || '26257' %>
   database: <%= ENV['DB_NAME'] || 'defaultdb' %>
-  sslmode: require
+  sslmode: verify-full
 
 cable:
   <<: *default
   username: <%= ENV['DB_USERNAME'] || 'tamiris' %>
-  password: <%= ENV['DB_PASSWORD'] || '_PBPzuhMJLiJCf9PiAY8gA' %>
-  host: <%= ENV['DB_HOST'] || 'wan-bulldog-15335.j77.aws-us-east-1.cockroachlabs.cloud' %>
+  password: <%= ENV['DB_PASSWORD'] || 'sw9pwC5prRI1vSQr4ezvbg' %>
+  host: <%= ENV['DB_HOST'] || 'ringed-pony-16530.j77.aws-us-east-1.cockroachlabs.cloud' %>
   port: <%= ENV['DB_PORT'] || '26257' %>
   database: <%= ENV['DB_NAME'] || 'defaultdb' %>
-  sslmode: require
+  sslmode: verify-full
