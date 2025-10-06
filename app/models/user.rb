@@ -91,8 +91,8 @@ class User < ApplicationRecord
     # Super admins podem aprovar qualquer um
     return true if super_admin?
     
-    # Admins só podem aprovar professores do mesmo curso
-    if admin? && target_user.teacher?
+    # Admins podem aprovar alunos e professores do mesmo curso
+    if admin? && (target_user.student? || target_user.teacher?)
       return course_id.present? && target_user.course_id == course_id
     end
     

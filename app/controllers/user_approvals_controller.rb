@@ -12,8 +12,8 @@ class UserApprovalsController < ApplicationController
       # Super admins veem todos os usuários pendentes
       # Não precisa filtrar nada
     elsif @current_user.admin?
-      # Admins só veem professores do mesmo curso
-      @pending_users = @pending_users.where(role: 1) # Apenas professores
+      # Admins veem professores e alunos do mesmo curso
+      @pending_users = @pending_users.where(role: [0, 1]) # Alunos e professores
       @pending_users = @pending_users.where(course_id: @current_user.course_id) if @current_user.course_id.present?
     else
       # Fallback: não deveria chegar aqui devido ao before_action
